@@ -78,7 +78,7 @@ func (user *User) init() {
 		Button("_Undo", call(*user, user.Undo), "undo"),
 		Button("_Redo", call(*user, user.Redo), "redo")}
 
-	user.sharedBlocks = map[string]Any{} //prevent panic in sgen
+	user.sharedBlocks = map[string]Any{} 
 
 	user.screens = map[string]*Screen_{}
 
@@ -160,15 +160,16 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 	funcName, ok := sign2funcName[sign]	
 	var res Any
 	if ok {
-		h, ok := u.screen.handlers[elemHandle(name, funcName)]
-		if ok {
-			return h(val)
+		for _,eh := range u.screen.handlers{
+			if eh.gui == elem && eh.nameFunc == funcName{		
+				return eh.handler(val)
+			}
 		}
 		hi, ok := getFieldValue(elem, funcName)
 		if !ok {
 			panic(F("%s doesn't contain field %s!", name, funcName))
 		}
-		if h, ok = hi.(Handler); ok {
+		if h, ok := hi.(Handler); ok {
 			//it's allowed
 			if h == nil && funcName == "Editing"{
 				return nil

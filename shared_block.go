@@ -87,15 +87,3 @@ func sharedAudios(user* User) Any{
 	return Block("New block", Seq(Button("Dialog", callDialog, ""), 
 		Edit("Simple Enter update", "cherokkee", updated)), Seq(tree, table))
 }
-
-func screenTest(user* User)* Screen_{	
-	return  Screen(user.SharedBlock("Audios"))	
-}
-
-func main(){
-	//register shared blocks
-	ShareBlock(sharedAudios, "Audios")
-	//register screens
-	Register(screenTest, "Main", 0, "insights")
-	Start()
-}

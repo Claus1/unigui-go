@@ -7,7 +7,9 @@ import (
 	"fmt"
 )
 
-var F = fmt.Sprintf
+var(
+	F = fmt.Sprintf	
+)
 
 type Answer struct {
 	Answer Any `json:"answer"`
@@ -23,8 +25,24 @@ func ToJson(o Any) []byte {
 	return b
 }
 
+func Fname2url(fn string) string{
+	return F("%s/%s", ResourcePort, strings.ReplaceAll(fn," ","%20"))
+}
+
+func Url2fname(url string) string{
+	return strings.ReplaceAll(url[strings.Index(url,"/") + 1:],"%20"," ")
+}
+
 func Seq(arr ...Any) []Any{
 	return arr
+}
+
+func SeqSeq(arr ...[]Any) [][]Any{
+	return arr
+}
+
+func UpdateError(elem2update Any, str string) *Popwindow{
+	return &Popwindow{Error : str, Data: elem2update}
 }
 
 func Error(str string) *Popwindow{

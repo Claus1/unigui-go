@@ -46,7 +46,7 @@ type (
 		Type, Icon string
 		Options    []string
 	}
-	arrOf3s = [][3]string
+	arr3str = [][3]string
 
 	optLevel struct {
 		s3    [3]string
@@ -58,10 +58,10 @@ type (
 		Changed    Handler
 		Type, Icon string
 		Options    [][2]string
-		elems      arrOf3s
+		elems      arr3str
 	}
 	Signal struct {
-		Maker Any		
+		Maker Any
 		Value string
 	}
 
@@ -105,6 +105,17 @@ func Edit(name string, value Any, changed Handler) *Edit_ {
 	return g
 }
 
+func Select(name string, value Any, changed Handler, options []string) *Select_ {
+	g := &Select_{Name: name, Value: value, Changed: changed, Options: options}
+	if changed == nil {
+		g.Changed = func(value Any) Any {
+			g.Value = value
+			return nil
+		}
+	}
+	return g
+}
+
 func Image(name string, image string, click Handler, wh ...int) *Image_ {
 	var w, h int
 	if len(wh) == 0 {
@@ -134,11 +145,11 @@ func Tree(name string, value string, selected Handler, fields *map[string]string
 	t.SetMapFields(fields)
 	return t
 }
-func (s *Tree_) SetFields(elems arrOf3s) {
+func (s *Tree_) SetFields(elems arr3str) {
 	s.elems = elems
 	s.Type = list
-	filterSoft := func(par2equal string) arrOf3s {
-		var arr arrOf3s
+	filterSoft := func(par2equal string) arr3str {
+		var arr arr3str
 		for _, e := range elems {
 			if e[2] == par2equal {
 				arr = append(arr, e)
@@ -176,7 +187,7 @@ func (s *Tree_) SetFields(elems arrOf3s) {
 	}
 }
 func (s *Tree_) SetMapFields(fields *map[string]string) {
-	elems := make(arrOf3s, len(*fields))
+	elems := make(arr3str, len(*fields))
 	i := 0
 	for k, v := range *fields {
 		elems[i] = [3]string{k, k, v}
@@ -185,8 +196,8 @@ func (s *Tree_) SetMapFields(fields *map[string]string) {
 	s.SetFields(elems)
 }
 
-type (	
-	CellHandler  = func(cellValue TableCell) Any
+type (
+	CellHandler = func(cellValue TableCell) Any
 
 	TableCell struct {
 		Value Any
@@ -194,12 +205,12 @@ type (
 	}
 
 	Table_ struct {
-		Name       string
-		Value      Any
-		Changed    Handler
-		Type, Icon,View string
-		Headers    []string
-		Rows       [][]Any
+		Name             string
+		Value            Any
+		Changed          Handler
+		Type, Icon, View string
+		Headers          []string
+		Rows             [][]Any
 
 		//Update the user pressed Enter in the field
 		Complete, Modify, Update CellHandler
@@ -233,11 +244,12 @@ func Table(name string, value Any, selected Handler, headers []string, rows [][]
 
 type (
 	Block_ struct {
-		Name               string
+		Name, Icon         string
 		Top_childs, Childs []Any
 		Scrool             bool
 		Width, Height      int
-	}	
+		Dispatch           Handler
+	}
 
 	Dialog struct {
 		Name, Text string
@@ -251,16 +263,18 @@ type (
 		Order              int
 		Prepare, Save      func()
 		Toolbar            []*Gui
-		handlers           map[string]Handler
+		handlers           []elemHandle
 	}
 )
 
-func elemHandle(nameElem string, nameFunc string) string{
-	return F("%s@%s",nameElem, nameFunc)
+type elemHandle struct {
+	gui Any
+	nameFunc string
+	handler Handler
 }
 
-func (s *Screen_) Handle(nameElem string, nameFunc string, handler Handler) {
-	s.handlers[elemHandle(nameElem, nameFunc)] = handler
+func (s *Screen_) Handle(gui Any, nameFunc string, handler Handler) {
+	s.handlers = append(s.handlers, elemHandle{gui, nameFunc, handler})
 }
 
 func Block(name string, top_childs []Any, childs ...Any) *Block_ {
@@ -268,5 +282,5 @@ func Block(name string, top_childs []Any, childs ...Any) *Block_ {
 }
 
 func Screen(blocks ...Any) *Screen_ {
-	return &Screen_{Blocks: blocks, handlers: make(map[string]Handler)}
+	return &Screen_{Blocks: blocks}
 }
