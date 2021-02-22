@@ -67,7 +67,7 @@ type (
 
 	Popwindow struct {
 		Error, Warning, Info string
-		Data                 Any
+		Data, Update    Any		
 	}
 )
 
@@ -92,10 +92,10 @@ func Switch(name string, value bool, changed Handler) *Gui {
 }
 
 func Text(str string) *Edit_ {
-	return &Edit_{Name: str, Edit: true}
+	return &Edit_{Name: str, Value : "", Edit: true}
 }
 func Edit(name string, value Any, changed Handler) *Edit_ {
-	g := &Edit_{Name: name, Value: value, Changed: changed}
+	g := &Edit_{Name: name, Value: value, Changed: changed, Edit: true}
 	if changed == nil {
 		g.Changed = func(value Any) Any {
 			g.Value = value
@@ -114,6 +114,12 @@ func Select(name string, value Any, changed Handler, options []string) *Select_ 
 		}
 	}
 	return g
+}
+
+func List(name string, value Any, changed Handler, options []string) *Select_ {
+	s := Select(name, value, changed, options)
+	s.Type = list
+	return s
 }
 
 func Image(name string, image string, click Handler, wh ...int) *Image_ {
@@ -251,7 +257,7 @@ type (
 		Dispatch           Handler
 	}
 
-	Dialog struct {
+	Dialog_ struct {
 		Name, Text string
 		Content    *Block_
 		Buttons    []string
@@ -263,7 +269,8 @@ type (
 		Order              int
 		Prepare, Save      func()
 		Toolbar            []*Gui
-		handlers           []elemHandle
+		Dispatch           Handler
+		handlers           []elemHandle		
 	}
 )
 
@@ -272,12 +279,22 @@ type elemHandle struct {
 	nameFunc string
 	handler Handler
 }
+//Dialog{"Dialog", "Answer pls..", nil, []string{"Yes", "No"}, dialogCallback}
+func Dialog(name string, text string, callback Handler, buttons ...string)* Dialog_{
+	return &Dialog_{name, text, nil, buttons, callback}
+}
 
 func (s *Screen_) Handle(gui Any, nameFunc string, handler Handler) {
 	s.handlers = append(s.handlers, elemHandle{gui, nameFunc, handler})
 }
 
 func Block(name string, top_childs []Any, childs ...Any) *Block_ {
+	if top_childs == nil{
+		top_childs = make([]Any, 0)
+	}
+	if childs == nil{
+		childs = make([]Any, 0)
+	}
 	return &Block_{Name: name, Top_childs: top_childs, Childs: childs}
 }
 

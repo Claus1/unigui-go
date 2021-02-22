@@ -21,12 +21,12 @@ type (
 	User struct {
 		UndoBuffer, RedoBuffer, History []Oper
 		HistoryCurrent                  int
-		activeDialog                    *Dialog
+		activeDialog                    *Dialog_
 		screen                          *Screen_
 		screens                         map[string]*Screen_
 		sharedBlocks                    map[string]Any
 		Toolbar                         []*Gui
-		Dispatch                        func(User, Signal) Any
+		Dispatch                        func(*User, Signal) Any
 		Save, Back, Forward, Undo, Redo func(User) Any
 		extension                       map[string]Any
 	}
@@ -125,6 +125,34 @@ func (u *User) appendChange(op Oper) {
 	u.UndoBuffer = append(u.UndoBuffer, op)
 	u.RedoBuffer = nil
 }
+
+func (u* User) handleMessage(msg []Any) Any{
+	var result Any
+	if u.activeDialog != nil{
+		if msg[0] == "root" && msg[1] == nil{
+			u.activeDialog = nil
+			return nil
+		} else if len(msg) == 2{ //button pressed
+			result = u.activeDialog.Callback(msg[1])
+			u.activeDialog = nil
+		}else{
+			el := u.findElement(msg)
+			if el != nil{
+				result = u.processElement(el, msg)
+			}
+		}
+	} else{
+		result = u.processMessage(msg)
+	}
+	if result != nil{
+		if dialog, ok := result.(*Dialog_); ok{
+			u.activeDialog = dialog
+		}
+		result = u.prepareResult(result)
+	}
+	return result
+}
+
 func (u *User) processMessage(arr []Any) Any {
 	if arr[0] == "root" {
 		nameScr := arr[1].(string)
@@ -184,11 +212,77 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 		}
 		if id != 0 {
 			res = Answer{res, nil, id}
+		}		
+	} else if sign == "@"{
+		block := u.blockElem(elem)
+		if block.Dispatch != nil{
+			res = block.Dispatch(val)
+		} else if u.screen.Dispatch != nil{
+			res = u.screen.Dispatch(val)
+		} else if u.Dispatch != nil{
+			res = u.Dispatch(u, Signal{elem, val.(string)})
 		}
-		return res
+	}
+	
+	return res
+}
+
+func(u *User) blockElem(elem Any) *Block_{
+	for _, blAny := range flatten(u.screen.Blocks){
+		block := blAny.(*Block_)
+		
+		for _, c := range append(block.Top_childs, block.Childs...) {
+			sq, ok := c.([]Any)
+			if ok {
+				for _, e := range sq {
+					if e == elem {
+						return block
+					}
+				}
+			} else {
+				if c == elem {
+					return block
+				}
+			}
+		}
 	}
 	return nil
 }
+
+func(u *User) findPath(elem Any) []string{
+	block := u.blockElem(elem)
+	n, _ := getFieldValue(elem, "Name")
+	return []string{block.Name, n.(string)}
+}
+
+type Updater struct{
+	Update, Data Any
+	Multi bool
+}
+
+func(u *User) prepareResult(val Any) Any{
+	if val == true{
+		val = u.screen
+		if u.screen.Prepare != nil{
+			u.screen.Prepare()
+		} 
+	} else if popwin, ok := val.(*Popwindow); ok{
+		if popwin.Data != nil{
+			popwin.Update = u.findPath(popwin.Data)
+		}
+	} else if arr, ok := val.([]Any); ok{
+		path := []Any{}
+		for _, e := range arr{
+			path = append(path, u.findPath(e))
+		}
+		val = Updater{path, val, true}
+	} else { //1 elem
+		val = Updater{u.findPath(val), val, false}
+	}
+	return val
+}
+
+
 func (u *User) findElement(arr []Any) Any {
 	if arr[0] == "toolbar" {
 		for _, b := range u.Toolbar {
@@ -197,7 +291,7 @@ func (u *User) findElement(arr []Any) Any {
 			}
 		}
 	}
-	for _, blAny := range u.screen.Blocks {
+	for _, blAny := range flatten(u.screen.Blocks) {
 		bl := blAny.(*Block_)
 		if bl.Name == arr[0] {
 			for _, c := range append(bl.Top_childs, bl.Childs...) {

@@ -20,12 +20,12 @@ func completeTable(tvalue TableCell) Any{
 	return nil
 }
 
-func completeEdit(value Any) Any{
+func complete(value Any) Any{
 	return &[]string{"aaa1", "bbbb2", "cccccc3"}
 }
 
 func callDialog(value Any) Any{
-	return Dialog{"Dialog", "Answer pls..", nil, []string{"Yes", "No"}, dialogCallback}
+	return Dialog("Dialog", "Answer pls..", dialogCallback, "Yes", "No")
 }
 
 func dialogCallback(pressedButton Any) Any{
@@ -84,6 +84,25 @@ func sharedAudios(user* User) Any{
 		return Info(F("%v selected!", value))
 	}
 	tree := Tree("Inheritance","Animals",treeSelected, &treeData)	
-	return Block("New block", Seq(Button("Dialog", callDialog, ""), 
-		Edit("Simple Enter update", "cherokkee", updated)), Seq(tree, table))
+	readOnly := Edit("Read only", "Try to change me", nil)
+	readOnly.Edit = false
+
+	completeEdit := Edit("Complete enter update field", "Enter something", nil)
+	completeEdit.Changed = func(val Any) Any{
+		completeEdit.Value = val
+		return Warning(F("Complete .. field changed to %v", val))
+	}
+	completeEdit.Complete = complete
+
+	eblock := Block("New block", Seq(Button("Dialog", callDialog, ""), 
+		Edit("Simple Enter update", "cherokkee", updated)), 
+		Text("Text about cats"), readOnly, completeEdit)
+
+	treeBlock := Block("Tree block", Seq(), tree)
+	treeBlock.Icon = "account_tree"
+	
+	tableBlock := Block("Table chart - push the chart button on the table", Seq(), table)
+	tableBlock.Icon = "insights"
+
+	return Seq(eblock, Seq(treeBlock, tableBlock))
 }

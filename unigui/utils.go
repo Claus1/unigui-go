@@ -9,7 +9,23 @@ import (
 
 var(
 	F = fmt.Sprintf	
+	flatten func (v []Any) []Any
 )
+
+func init(){
+	flatten = func (v []Any) []Any{
+		var res []Any
+		for _, e := range v{
+			arr, ok := e.([]Any)
+			if ok{
+				res = append(res, flatten(arr)...)
+			}else{
+				res = append(res, e)
+			}
+		}
+		return res
+	}	
+}
 
 type Answer struct {
 	Answer Any `json:"answer"`
@@ -77,6 +93,13 @@ func filterPopwindow(name string, value Any) bool {
 	return value != nil && value != ""
 }
 
+func filterUpdater(name string, value Any) bool {
+	return value != nil && value != false
+}
+
+func (s Updater) MarshalJSON() ([]byte, error) {
+	return serialize(&s, filterUpdater)
+}
 func (s Gui) MarshalJSON() ([]byte, error) {
 	return serialize(&s, filterGui)
 }
@@ -101,7 +124,7 @@ func (s Block_) MarshalJSON() ([]byte, error) {
 	return serialize(&s, filterWidthHeight)
 }
 
-func (s Dialog) MarshalJSON() ([]byte, error) {
+func (s Dialog_) MarshalJSON() ([]byte, error) {
 	return serialize(&s, filterGui)
 }
 
@@ -133,6 +156,8 @@ func getFieldValue(s Any, fname string) (Any, bool) {
 func ToInt(val Any) int{
 	return int(val.(float64))
 }
+
+
 
 func any2cellVal(v Any)* TableCell {
 	arr := v.([]Any)

@@ -18,11 +18,11 @@ func screenTest(user* User)* Screen_{
 
 	selector := Select("Select", "All", nil, []string{"All","Based","Group"})
 
-	listRefs := Select("Detail ref list signals", "", nil, []string{"Select reference"})
+	listRefs := List("Detail ref list signals", "", nil, []string{"Select reference"})
 
 	blockDispatch := func(value Any) Any{
 		for i := 0; i <10; i++{
-			listRefs.Options = append(listRefs.Options, F("#%i %v", i, value))
+			listRefs.Options = append(listRefs.Options, F("#%d %v", i, value))
 		}
 		return listRefs		
 	}
@@ -51,7 +51,7 @@ func screenTest(user* User)* Screen_{
 			return UpdateError(selector, "Select can not be Based!")
 		}
 		return nil
-	})
+	})	
 	return scr
 }
 
@@ -59,8 +59,6 @@ func main(){
 	//register shared blocks
 	ShareBlock(sharedAudios, "Audios")
 	//register screens
-	Register(screenTest, "Main", 0, "insights")
-
-	ResourcePort = ":8080"
+	Register(screenTest, "Main", 0, "insights")	
 	Start()
 }

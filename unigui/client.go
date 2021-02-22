@@ -73,10 +73,10 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		var parsed []Any
-		json.Unmarshal([]byte(message), &parsed)
-		fmt.Println(F("Got %v from %v", parsed, c.conn.RemoteAddr()))
-		result := c.user.processMessage(parsed)
+		var parsedMsg []Any
+		json.Unmarshal([]byte(message), &parsedMsg)
+		fmt.Println(F("Got %v from %v", parsedMsg, c.conn.RemoteAddr()))
+		result := c.user.handleMessage(parsedMsg)
 		if result != nil {
 			c.send <- ToJson(result)
 		}

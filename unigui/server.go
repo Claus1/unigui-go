@@ -20,13 +20,9 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 	if i != -1 {
 		path = path[:i]
-	}
-	path = strings.ReplaceAll(path, "%20", " ")
-	uplPath := F("/%s/", path)
-	if strings.Index(path, uplPath) != 0 {
-		path = "web" + path
-	}
-
+	}	
+	path = F("web/%s/", strings.ReplaceAll(path, "%20", " "))
+		
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
