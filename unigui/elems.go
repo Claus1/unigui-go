@@ -92,7 +92,7 @@ func Switch(name string, value bool, changed Handler) *Gui {
 }
 
 func Text(str string) *Edit_ {
-	return &Edit_{Name: str, Value : "", Edit: true}
+	return &Edit_{Name: str, Value : "", Edit: false}
 }
 func Edit(name string, value Any, changed Handler) *Edit_ {
 	g := &Edit_{Name: name, Value: value, Changed: changed, Edit: true}

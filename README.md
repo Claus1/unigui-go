@@ -17,37 +17,37 @@ Unigui is the language and platform independent technology. This repo explains h
 Unigui web version is included in this library. Unigui for Python is accessible in https://github.com/Claus1/unigui
 
 ### High level - Screen ###
-The program directory has to contain a screens folder which contains all screens which Unigui has to show.
+The program declares screen builder function which has to be registered.
 
-Screen example test.go
+Screen example examples/HelloUnigui.go
+The block example with a table, button and selector
 ```
-name = "Main" #name of screen to show
-icon = 'blur_linear' #MD icon of screen to show
-order = 0 #order in the program menu
-blocks = [block] #what to show on the screen
-```
+package main
 
-The block example with a table and 2 selectors
-```
-table = Table('Videos', 0, headers = ['Video', 'Duration',  'Links', 'Mine'],rows = [
-    ['opt_sync1_3_0.mp4', '30 seconds',  '@Refer to signal1', True],
-    ['opt_sync1_3_0.mp4', '37 seconds',  '@Refer to signal8', False]    
-])
-#widgets are groped in blocks (complex widgets with logic)
-block = Block('X Block',
-    [           
-        Button('Clean table'),
-        Select('Select', value='All', options=['All','Based','Group'])
-    ], table, icon = 'api')
+import . "unigui"		
+
+func screenTest(user* User)* Screen_{	
+	table := Table("Videos",0, nil, []string{"Video", "Duration",  "Links", "Mine"},
+	SeqSeq(Seq("opt_sync1_3_0.mp4", "30 seconds",  "@Refer to signal1", true),
+		Seq("opt_sync1_3_0.mp4", "37 seconds",  "@Refer to signal8", false)))
+			
+	cleanButton := Button("Clean table", nil, "")
+
+	selector := Select("Select", "All", nil, []string{"All","Based","Group"})
+
+	block := Block("X Block", Seq(cleanButton, selector), table)
+	block.Icon = "api"
+
+	return Screen(block)	
+}
+func main(){			
+	//register screens
+	Register(screenTest, "Main", 0, "insights")	
+	Start()
+}
 ```
 
 ### Server start ###
-tests/run_hello.py
-```
-import unigui
-#app name, port for initial connection and UploadDir folder are optional
-unigui.start('Test app', port = 8080) 
-```
 Unigui builds the interactive app for the code above.
 Connect a browser to localhast:8080 and will see:
 
@@ -56,38 +56,48 @@ Connect a browser to localhast:8080 and will see:
 ### Handling events ###
 All handlers are functions which have a signature
 ```
-def handler_x(gui_object, value_x)
+func handler_x( value_x interface{}) interface{}
 ```
-where gui_object is a Python object the user interacted with and value for the event.
+where value_x is a value for the event.
 
-All Gui objects except Button have a field ‘value’. 
+All Gui objects except Button have a field ‘Value’. 
 For an edit field the value is a string or number, for a switch or check button the value is boolean, for table is row id or index, e.t.c.
-When a user changes the value of the Gui object or presses Button, the server calls the ‘changed’ function handler.
+When a user changes the value of the Gui object or presses Button, the server calls the ‘Changed’ function handler.
 
 ```
-def clean_table(_, value):
-    table.rows = []
-    return table
-clean_button = Button('Clean the table’, clean_table)
+cleanTable := func(v Any) Any{
+	table.Rows = SeqSeq()
+	return nil
+}
+cleanButton := Button("Clean table", cleanTable, "")
 ```
+where Any, Seq, SeqSeq just short names defined as
+```
+type Any = interface{}
+func Seq(arr ...Any) []Any{
+	return arr
+}
+func SeqSeq(arr ...[]Any) [][]Any{
+	return arr
+}
+```
+‘Changed’ handlers have to return Gui object or array(Seq) of Gui objects that were changed by the handler and Unigui has to redraw or does nothing if all visible elements have the same state. Unigui will do all other jobs for synchronizing automatically. If a Gui object doesn't have 'Changed' handler the object accepts incoming value automatically to the 'Value' variable of gui object.
 
-‘changed’ handlers have to return Gui object or array of Gui objects that were changed by the handler and Unigui has to redraw or does nothing if all visible elements have the same state. Unigui will do all other jobs for synchronizing automatically. If a Gui object doesn't have 'changed' handler the object accepts incoming value automatically to the 'value' variable of gui object.
-
-If 'value' is not acceptable instead of returning an object possible to return Error or Warning or UpdateError. The last function has a list object, which has to be synchronized simultaneously with informing about the Error.
-
-#### If a handler returns True or UpdateScreen constant the whole screen will be redrawn. Also it causes calling Screen function prepare() which used for syncronizing GUI elements one to another and with the program/system data. prepare() is also automatically called when the screen loaded. prepare() is optional.
+If 'Value' is not acceptable instead of returning an object possible to return Info, Error or Warning or UpdateError pop-up window. The last function has a object parameter, which has to be synchronized simultaneously with informing about the Error.
 
 ```
-def changed_range(_,value):
-   if value < 0.5 and value > 1.0:
-       #or UpdateError(_, message) if we want to return the previous visible value to the field
-       return Error(f‘The value of {_.name} has to be > 0.5 and < 1.0!') 
-    #accept value othewise
-    _.value = value
+selector := Select("Select", "All", nil, []string{"All","Based","Group"})
 
-edit = Edit('Range of involving', 0.6, changed_range)
+selector.Changed = func(v Any) Any{
+    if v == "Based"{
+        return UpdateError(selector, "Select can not be Based!")
+    }
+    return nil
+})	
 ```
-If the handler returns None (or does not return anything) Unigui considers it as Ok.
+#### If a handler returns true the whole screen will be redrawn. Also it causes calling Screen function Prepare() which used for syncronizing GUI elements one to another and with the program/system data. Prepare() is also automatically called when the screen loaded. Prepare() is optional.
+
+If the handler returns nil Unigui considers it as Ok.
 
 ### Block details ###
 The width and height of blocks is calculated automatically depending on their children. It is possible to set the block width and make it scrollable in height, for example for images list. Possible to add MD icon to the header, if required. Width, scroll, .. are optional.

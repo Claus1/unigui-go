@@ -78,7 +78,7 @@ func (user *User) init() {
 		Button("_Undo", call(*user, user.Undo), "undo"),
 		Button("_Redo", call(*user, user.Redo), "redo")}
 
-	user.sharedBlocks = map[string]Any{} 
+	user.sharedBlocks = map[string]Any{}
 
 	user.screens = map[string]*Screen_{}
 
@@ -126,26 +126,26 @@ func (u *User) appendChange(op Oper) {
 	u.RedoBuffer = nil
 }
 
-func (u* User) handleMessage(msg []Any) Any{
+func (u *User) handleMessage(msg []Any) Any {
 	var result Any
-	if u.activeDialog != nil{
-		if msg[0] == "root" && msg[1] == nil{
+	if u.activeDialog != nil {
+		if msg[0] == "root" && msg[1] == nil {
 			u.activeDialog = nil
 			return nil
-		} else if len(msg) == 2{ //button pressed
+		} else if len(msg) == 2 { //button pressed
 			result = u.activeDialog.Callback(msg[1])
 			u.activeDialog = nil
-		}else{
+		} else {
 			el := u.findElement(msg)
-			if el != nil{
+			if el != nil {
 				result = u.processElement(el, msg)
 			}
 		}
-	} else{
+	} else {
 		result = u.processMessage(msg)
 	}
-	if result != nil{
-		if dialog, ok := result.(*Dialog_); ok{
+	if result != nil {
+		if dialog, ok := result.(*Dialog_); ok {
 			u.activeDialog = dialog
 		}
 		result = u.prepareResult(result)
@@ -168,7 +168,7 @@ func (u *User) processMessage(arr []Any) Any {
 			return res
 		}
 		elem = sig.Maker
-		name,_ := getFieldValue(elem, "Name")
+		name, _ := getFieldValue(elem, "Name")
 		arr = Seq("", name, "@", sig.Value)
 	}
 }
@@ -185,11 +185,11 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 	}
 	name := msg[1].(string)
 	val := msg[3]
-	funcName, ok := sign2funcName[sign]	
+	funcName, ok := sign2funcName[sign]
 	var res Any
 	if ok {
-		for _,eh := range u.screen.handlers{
-			if eh.gui == elem && eh.nameFunc == funcName{		
+		for _, eh := range u.screen.handlers {
+			if eh.gui == elem && eh.nameFunc == funcName {
 				return eh.handler(val)
 			}
 		}
@@ -199,38 +199,38 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 		}
 		if h, ok := hi.(Handler); ok {
 			//it's allowed
-			if h == nil && funcName == "Editing"{
+			if h == nil && funcName == "Editing" {
 				return nil
 			}
 			res = h(val)
 
 		} else if ch, isCH := hi.(CellHandler); isCH {
-			
-			res = ch(*any2cellVal(val))			
+
+			res = ch(*any2cellVal(val))
 		} else {
 			panic(F("%s.%s has unknown type!", name, funcName))
 		}
 		if id != 0 {
 			res = Answer{res, nil, id}
-		}		
-	} else if sign == "@"{
+		}
+	} else if sign == "@" {
 		block := u.blockElem(elem)
-		if block.Dispatch != nil{
+		if block.Dispatch != nil {
 			res = block.Dispatch(val)
-		} else if u.screen.Dispatch != nil{
+		} else if u.screen.Dispatch != nil {
 			res = u.screen.Dispatch(val)
-		} else if u.Dispatch != nil{
+		} else if u.Dispatch != nil {
 			res = u.Dispatch(u, Signal{elem, val.(string)})
 		}
 	}
-	
+
 	return res
 }
 
-func(u *User) blockElem(elem Any) *Block_{
-	for _, blAny := range flatten(u.screen.Blocks){
+func (u *User) blockElem(elem Any) *Block_ {
+	for _, blAny := range flatten(u.screen.Blocks) {
 		block := blAny.(*Block_)
-		
+
 		for _, c := range append(block.Top_childs, block.Childs...) {
 			sq, ok := c.([]Any)
 			if ok {
@@ -249,39 +249,40 @@ func(u *User) blockElem(elem Any) *Block_{
 	return nil
 }
 
-func(u *User) findPath(elem Any) []string{
+func (u *User) findPath(elem Any) []string {
 	block := u.blockElem(elem)
 	n, _ := getFieldValue(elem, "Name")
 	return []string{block.Name, n.(string)}
 }
 
-type Updater struct{
+type Updater struct {
 	Update, Data Any
-	Multi bool
+	Multi        bool
 }
 
-func(u *User) prepareResult(val Any) Any{
-	if val == true{
+func (u *User) prepareResult(val Any) Any {
+	if val == true {
 		val = u.screen
-		if u.screen.Prepare != nil{
+		if u.screen.Prepare != nil {
 			u.screen.Prepare()
-		} 
-	} else if popwin, ok := val.(*Popwindow); ok{
-		if popwin.Data != nil{
+		}
+	} else if popwin, ok := val.(*Popwindow); ok {
+		if popwin.Data != nil {
 			popwin.Update = u.findPath(popwin.Data)
 		}
-	} else if arr, ok := val.([]Any); ok{
-		path := []Any{}
-		for _, e := range arr{
-			path = append(path, u.findPath(e))
+	} else if _, ok := val.(Answer); !ok {
+		if arr, ok := val.([]Any); ok {
+			path := []Any{}
+			for _, e := range arr {
+				path = append(path, u.findPath(e))
+			}
+			val = Updater{path, val, true}
+		} else { //1 elem
+			val = Updater{u.findPath(val), val, false}
 		}
-		val = Updater{path, val, true}
-	} else { //1 elem
-		val = Updater{u.findPath(val), val, false}
 	}
 	return val
 }
-
 
 func (u *User) findElement(arr []Any) Any {
 	if arr[0] == "toolbar" {

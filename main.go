@@ -4,7 +4,6 @@ import (
 	. "unigui/unigui"		
 )
 
-
 func screenTest(user* User)* Screen_{	
 	table := Table("Videos",0, nil, []string{"Video", "Duration",  "Links", "Mine"},
 	SeqSeq(Seq("opt_sync1_3_0.mp4", "30 seconds",  "@Refer to signal1", true),
