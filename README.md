@@ -28,21 +28,18 @@ import . "unigui"
 
 func screenTest(user* User)* Screen_{	
 	table := Table("Videos",0, nil, []string{"Video", "Duration",  "Links", "Mine"},
-	SeqSeq(Seq("opt_sync1_3_0.mp4", "30 seconds",  "@Refer to signal1", true),
-		Seq("opt_sync1_3_0.mp4", "37 seconds",  "@Refer to signal8", false)))
+	    SeqSeq(Seq("opt_sync1_3_0.mp4", "30 seconds",  "@Refer to signal1", true),
+		       Seq("opt_sync1_3_0.mp4", "37 seconds",  "@Refer to signal8", false)))
 			
 	cleanButton := Button("Clean table", nil, "")
-
 	selector := Select("Select", "All", nil, []string{"All","Based","Group"})
-
 	block := Block("X Block", Seq(cleanButton, selector), table)
 	block.Icon = "api"
-
 	return Screen(block)	
 }
 func main(){			
 	//register screens
-	Register(screenTest, "Main", 0, "insights")	
+	Register(screenTest, "Main", 0, "api")	
 	Start()
 }
 ```
@@ -97,33 +94,41 @@ selector.Changed = func(v Any) Any{
 ```
 #### If a handler returns true the whole screen will be redrawn. Also it causes calling Screen function Prepare() which used for syncronizing GUI elements one to another and with the program/system data. Prepare() is also automatically called when the screen loaded. Prepare() is optional.
 
-If the handler returns nil Unigui considers it as Ok.
+If the handler returns nil Unigui considers it as Ok and does nothing.
 
 ### Block details ###
-The width and height of blocks is calculated automatically depending on their children. It is possible to set the block width and make it scrollable in height, for example for images list. Possible to add MD icon to the header, if required. Width, scroll, .. are optional.
+The width and height of blocks is calculated automatically depending on their children. It is possible to set the block width and make it scrollable in height, for example for images list. Possible to add MD icon to the header, if required. Width, scroll, .. are optional. Block helper is
 ```
-block = Block(‘Pictures’,add_button, *images, width = 500, scroll = True,icon = 'api')
+func Block(name string, top_childs []Any, childs ...Any) *Block_ 
 ```
  
-The second parameter of the Block constructor is an array of widgets which has to be in the header just after the name.
-Blocks can be shared between the user screens with its states. Such a block has to be located in the blocks folder of the python layer.
-Examples of such block tests/blocks/tblock.py:
+The top_childs parameter of the Block constructor is an array of widgets which has to be in the header just after the block name.
+Blocks can be shared between the user screens with its states. Such a block has to be declared inside Block making function and registered by call ShareBlock(myBlock).
+Examples of such block examples/shared_block.go:
 ```
-from unigui import *
-..
-concept_block = Block('Concept block',
-   [   #some gui elements       
-       Button('Run',run_proccess),
-       Edit('Working folder','run_folder')
-   ], result_table)
+
+func sharedAudios(user* User) Any{
+	table := Table("Audios",0, nil, []string{"Audio", "Duration,sec", "Stars"}, genRows())
+    tableBlock := Block("Table chart, Button("Press me", nil), table)
+	tableBlock.Icon = "insights"
+    return tableBlock
+}
+func main(){		
+	//register shared blocks
+	ShareBlock(sharedAudios, "Audios")
+    ...
+	//register screens
+	...
+}
 ```
+
+
 If some elements are enumerated inside an array, Unigui will display them on a line, otherwise everyone will be displayed on a new own line(s).
  
 Using a shared block in some screen:
 ```
-from blocks.tblock import concept_block
-...
-blocks = [.., concept_block]
+scr :=  Screen(Seq(block, bottomBlock), user.SharedBlock("Audios"))	//user is always accesible in screen making function
+
 ```
 
 #### Events interception of shared blocks ####
@@ -131,72 +136,59 @@ Interception handlers have the same in/out format as usual handlers.
 #### They are called before the inner element handler call. They cancel the call of inner element handler but you can call it as shown below.
 For example above interception of select_mode changed event will be:
 ```
-@handle(select_mode, 'changed')
-def do_not_select_mode_x(_, value):
-    if value == 'mode_x':
-        return UpdateError(_, 'Do not select mode_x')
-    return _.accept(value) #otherwise accept the value
+screen.Handle(selector, "Changed", func(v Any) Any{
+    if v == "Based"{
+        return UpdateError(selector, "Select can not be Based!")
+    }
+    return nil
+})	
 ```
 
 #### Layout of blocks. #### 
 If the blocks are simply listed Unigui draws them from left to right or from top to bottom depending on the orientation setting. If a different layout is needed, it can be set according to the following rule: if the vertical area must contain more than one block, then the enumeration in the array will arrange the elements vertically one after another. If such an element enumeration is an array of blocks, then they will be drawn horizontally in the corresponding area.
 
 #### Example ####
-blocks = [ [b1,b2], [b3, [b4, b5]]]
+screen = Screen(Seq(b1,b2), Seq(b3, Seq(b4, b5)))
 #[b1,b2] - the first vertical area, [b3, [b4, b5]] - the second one.
 
 ![alt text](https://github.com/Claus1/unigui/blob/main/tests/multiscreen.png?raw=true)
 
 ### Basic gui elements ###
-You have to know that class names are used only for programmer convenience and do not receive Unigui.
+Class names are used only for programmer convenience and do not used by Unigui.
 #### If the element name starts from _ , Unigui will not show its name on the screen. ####
-if we need to paint an icon somewhere in the element, add 'icon': 'any MD icon name'.
+if we need to paint an icon somewhere in the element, set the element 'Icon' to 'any MD icon name'.
 
-#### All constructor parameters are optional for all Gui elements except the first one - name. ####
 
 Common form for element constructors:
 ```
-Gui('Name', value = some_value, changed = changed_handler)
-#It is possible to use short form, that is equal:
-Gui('Name', some_value, changed_handler)
+Gui(name string, value Any, changed Handler)
 ```
-calling the method 
-def accept(self, value) 
-causes  a call changed handler if it defined, otherwise just save value to self.value
+calling the function by default record value to Value field.
+Changed(value) 
 
-#### It is possible immediately to change any Gui object paramaters and even its type, i.e. a gui element can mutate to any other type. ####
-Mutation is usefull when we want to keep actual reference from the others elements but change it to a new required type.
-After mutation the handler has to return containing Block or UpdateScreen for automatic recalculating the block or the screen geometry.
-```
-selector.mutate(edit_fld) #the selector keeps alive with a totally different gui element.
-```
 #### Button ####
 Normal button.
 ```
-Button('Push me', changed = push_callback) 
-```
-Short form
-```
-Button('Push me', push_callback) 
+Button("Push me", push_callback, "") 
 ```
 Icon button 
 ```
-Button('_Check', push_callback, icon = 'check')
+Button("_Check", push_callback, "check") //icon == "check" in MD icon list
 ```
 #### Load to server Button ####
 Special button provides file loading from user device or computer to the Unigui server.
 ```
-Button('Load', handler_when_loading_finish, icon='photo_library', type = 'gallery')
+UploadButton("Load", handler_when_loading_finish, "photo_library")
 ```
 handler_when_loading_finish(button_, the_loaded_file_filename) where the_loaded_file_filename is a file name in upload server folder. This folder name is optional UploadDir parameter in unigui.start.
 
 #### Camera Button ####
 Special button provides to make a photo on the user mobile device. 
 ```
-Button('Make a photo', handler_when_shooting_finish, icon='camera_alt', type = 'camera')
+CameraButton('Make a photo', handler_when_shooting_finish, "camera_alt")
 ```
 handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is an
-optional UploadDir parameter in unigui.start.
+var UploadDir in unigui.
 
 #### Edit and Text field. ####
 ```

@@ -35,8 +35,7 @@ func screenTest(user* User)* Screen_{
 	block := Block("X Block", Seq(cleanButton, selector), Seq(table, listRefs))
 	block.Icon = "api"
 
-	replaceButton := Button("Replace the logo", replaceImage, "")
-	replaceButton.Type = "gallery"
+	replaceButton := UploadButton("Replace the logo", replaceImage, "")	
 
 	bottomBlock := Block("Bottom block", Seq(replaceButton, Button("Happy signal", 
 		func(v Any)Any{return Signal{replaceButton, "make everyone happy"}}, "")), image)

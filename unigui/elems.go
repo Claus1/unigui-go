@@ -80,6 +80,19 @@ func Button(name string, clicked Handler, icon string) *Gui {
 	}
 	return b
 }
+
+func UploadButton(name string, clicked Handler, icon string) *Gui {
+	bp := Button(name, clicked, icon)
+	bp.Type = "gallery"
+	return bp
+}
+
+func CameraButton(name string, clicked Handler, icon string) *Gui {
+	bp := Button(name, clicked, icon)
+	bp.Type = "camera"
+	return bp
+}
+
 func Switch(name string, value bool, changed Handler) *Gui {
 	g := &Gui{name, value, changed, "", ""}
 	if changed == nil {
