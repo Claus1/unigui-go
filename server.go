@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"github.com/hashicorp/go-getter"
 )
 
 var (
@@ -15,6 +16,18 @@ var (
 	WsocketPort  = ":1234"
 	UploadDir    = "upload"
 )
+
+func init(){
+   dir, err := os.Getwd()
+   if err != nil {
+	   fmt.Print(dir)
+   }
+   dir += "/web"
+   if _, err := os.Stat(dir); os.IsNotExist(err) {
+	   getter.Get(dir, "github.com/Claus1/unigui-go//web")
+	   fmt.Print("web files downloaded.")
+   }		
+}
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 

@@ -1,6 +1,6 @@
 package main
 
-import . "unigui/unigui"		
+import . "github.com/Claus1/unigui-go"		
 
 func screenTest(user* User)* Screen_{	
 	table := Table("Videos",0, nil, []string{"Video", "Duration",  "Links", "Mine"},

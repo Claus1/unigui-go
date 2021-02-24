@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "unigui/unigui"
+	. "github.com/Claus1/unigui-go"	
 	"math/rand"
 	. "math"	
 )
