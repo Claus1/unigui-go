@@ -1,4 +1,4 @@
-module unigui
+module github.com/Claus1/unigui-go
 
 go 1.15
 

@@ -178,14 +178,14 @@ Button("_Check", push_callback, "check") //icon == "check" in MD icon list
 #### Load to server Button ####
 Special button provides file loading from user device or computer to the Unigui server.
 ```
-UploadButton("Load", handler_when_loading_finish, "photo_library")
+UploadButton("Load", handler_when_loading_finish)
 ```
 handler_when_loading_finish(button_, the_loaded_file_filename) where the_loaded_file_filename is a file name in upload server folder. This folder name is optional UploadDir parameter in unigui.start.
 
 #### Camera Button ####
 Special button provides to make a photo on the user mobile device. 
 ```
-CameraButton('Make a photo', handler_when_shooting_finish, "camera_alt")
+CameraButton('Make a photo', handler_when_shooting_finish)
 ```
 handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is an
 var UploadDir in unigui.
