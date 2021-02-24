@@ -78,9 +78,9 @@ func SeqSeq(arr ...[]Any) [][]Any{
 	return arr
 }
 ```
-‘Changed’ handlers have to return Gui object or array(Seq) of Gui objects that were changed by the handler and Unigui has to redraw or does nothing if all visible elements have the same state. Unigui will do all other jobs for synchronizing automatically. If a Gui object doesn't have 'Changed' handler the object accepts incoming value automatically to the 'Value' variable of gui object.
+‘Changed’ handlers have to return Gui object or array(Seq) of Gui objects that were changed by the handler and Unigui has to redraw or does nothing if all visible elements have the same state. Unigui will do all other jobs for synchronizing automatically. If a Gui object doesn"t have "Changed" handler the object accepts incoming value automatically to the "Value" variable of gui object.
 
-If 'Value' is not acceptable instead of returning an object possible to return Info, Error or Warning or UpdateError pop-up window. The last function has a object parameter, which has to be synchronized simultaneously with informing about the Error.
+If "Value" is not acceptable instead of returning an object possible to return Info, Error or Warning or UpdateError pop-up window. The last function has a object parameter, which has to be synchronized simultaneously with informing about the Error.
 
 ```
 selector := Select("Select", "All", nil, []string{"All","Based","Group"})
@@ -154,17 +154,18 @@ screen = Screen(Seq(b1,b2), Seq(b3, Seq(b4, b5)))
 ![alt text](https://github.com/Claus1/unigui/blob/main/tests/multiscreen.png?raw=true)
 
 ### Basic gui elements ###
-Class names are used only for programmer convenience and do not used by Unigui.
-#### If the element name starts from _ , Unigui will not show its name on the screen. ####
-if we need to paint an icon somewhere in the element, set the element 'Icon' to 'any MD icon name'.
 
+#### If the element name starts from _ , Unigui will not show its name on the screen. ####
+if we need to paint an icon somewhere in the element, set the element "Icon" to "any MD icon name".
 
 Common form for element constructors:
 ```
 Gui(name string, value Any, changed Handler)
 ```
-calling the function by default record value to Value field.
+call the Changed function records value to Value field by default.
+```
 Changed(value) 
+```
 
 #### Button ####
 Normal button.
@@ -176,53 +177,58 @@ Icon button
 Button("_Check", push_callback, "check") //icon == "check" in MD icon list
 ```
 #### Load to server Button ####
-Special button provides file loading from user device or computer to the Unigui server.
+Special button provides file uploading from user device or computer to the Unigui server.
 ```
-UploadButton("Load", handler_when_loading_finish)
+UploadButton("Load", handler_when_loading_finish, icon)
 ```
-handler_when_loading_finish(button_, the_loaded_file_filename) where the_loaded_file_filename is a file name in upload server folder. This folder name is optional UploadDir parameter in unigui.start.
+handler_when_loading_finish(button_, the_loaded_file_filename) where the_loaded_file_filename is a file name in upload server folder. This folder name is global UploadDir parameter in unigui which can be changed before start().
 
 #### Camera Button ####
 Special button provides to make a photo on the user mobile device. 
 ```
-CameraButton('Make a photo', handler_when_shooting_finish)
+CameraButton("Make a photo", handler_when_shooting_finish)
 ```
-handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is an
-var UploadDir in unigui.
+handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is global UploadDir parameter in unigui which can be changed before start().
 
 #### Edit and Text field. ####
 ```
-Edit('Some field', '') #for string value
-Edit('Number field', 0.9) #for numbers
+Edit("Name", "value", changed_handler) #for string value
+numEdit := Edit("Number field", 0.9, nil) #for numbers
 ```
 If set edit = false it will be readonly field or text label.
 ```
-Edit('Some field', '', edit = false) 
-#is equal to
-Text('Some field')
-```
-complete handler is optional function which accepts the current field value and returns a string list for autocomplete.
-```
-Edit('Edit me', value = '', complete = get_complete_list) #value has to be string or number
+numEdit.edit = false
 
-def get_complete_list(gui_element, current_value):
-    return [s for s in vocab if current_value in s]    
+//Text field
+Text("Some field")
 ```
-Can contain optional 'update' handler which is called when the user press Enter in the field.
-It can return None or objects for updating as usual handler.
+Complete handler is optional function which accepts the current field value and returns a string list for autocomplete.
+```
+edit := Edit("Edit me",  "")
+edit.Complete = getCompleteList 
+
+def getCompleteList(current_value Any):
+    return []string{"option1","option2","option3"}    
+```
+Can contain optional "Update" handler which is called when the user press Enter in the field.
+It can return nil or Gui object(s) for updating as usual handler.
 
 
 #### Radio button ####
 ```
-Switch('Radio button', value = True[,changed = ..]) #value has to be boolean, changed - optional
+Switch("Radio button", value bool, changed Handler) #changed - optional
 ```
 
 #### Select group. Contains options field. ####
 ```
-Select('Select something', "choice1", selection_is_changed, options = ["choice1","choice2", "choice3"]) 
+//build select field
+Select(name String, value Any, selectionChanged Handler, options []string)
+
+//build as vertical list
+List(name String, value Any, selectionChanged Handler, options []string)
 ```
-can be such type 'toggles','list','dropdown'. Unigui automatically chooses between toogles and dropdown,
-but the user can set type = 'list' then Unigui build it as vertical select list.
+Select can be such type "toggles","dropdown". Unigui automatically chooses between toogles and dropdown,
+but the user can set preferrable type then Unigui build it as the user want.
 
 #### Image. #### 
 width,changed and height are optional, changed is called if the user click or touch the image.
@@ -237,37 +243,37 @@ Image("Image", "some url", show_image_info, width = .., height = ..)
 ```
 Tree(name, selected_item_key, changed_handler, [unique_elems = .., elems = ..])
 ```
-unique_elems for the data without repeating names, it is dictionary {item_name:parent_name}. If 'unique_elems' defined then 'elems' is redundant.
-'elems' for data which can contain repeating names. it is array of arrays [item_name,item_key,parent_key].
+unique_elems for the data without repeating names, it is dictionary {item_name:parent_name}. If "unique_elems" defined then "elems" is redundant.
+"elems" for data which can contain repeating names. it is array of arrays [item_name,item_key,parent_key].
 parent_name and parent_key are None for root items. changed_handler gets the tree object and item key as value which is the item name for unique items. 
 
 ### Table. ###
 Tables is common structure for presenting 2D data and charts. Can contain append, delete, update handlers, multimode parameter is True if allowed single and multi select mode. True by default. All of them are optional. When you add a handler for such action Unigui will draw an appropriate action icon button in the table header automatically.
 ```
-table = Table('Videos', [0], row_changed, headers = ['Video', 'Duration', 'Owner', 'Status'],  
+table = Table("Videos", [0], row_changed, headers = ["Video", "Duration", "Owner", "Status"],  
   rows = [
-    ['opt_sync1_3_0.mp4', '30 seconds', 'Admin', 'Processed'],
-    ['opt_sync1_3_0.mp4', '37 seconds', 'Admin', 'Processed']
+    ["opt_sync1_3_0.mp4", "30 seconds", "Admin", "Processed"],
+    ["opt_sync1_3_0.mp4", "37 seconds", "Admin", "Processed"]
   ], 
   multimode = false, update = update)
 ```
-If 'headers' length is equal 'rows' length Unigui counts rows id as an index in rows array.
-If 'rows' length is 'headers' length + 1, Unigui counts rows id as the last row field.
+If "headers" length is equal "rows" length Unigui counts rows id as an index in rows array.
+If "rows" length is "headers" length + 1, Unigui counts rows id as the last row field.
 So it is possible to use some keys as row ids just by adding it to the row as the last element.
 If table does not contain append, delete arguments, then it will be drawn without add and remove icons.  
 value = [0] means 0 row is selected in multiselect mode (in array). multimode is False so switch icon for single select mode will be not drawn and switching to single select mode is not allowed.
 
 
-By default Table has toolbar with search field and icon action buttons. It is possible to hide it if set 'tools = False' in the Table constructor.
+By default Table has toolbar with search field and icon action buttons. It is possible to hide it if set "tools = False" in the Table constructor.
 
 Table shows a paginator if all rows can not be drawn on the screen. Otherwise a table paginator is redundant and omitted.
 
-If the selected row is not on the currently visible page then setting 'show = True' table parameter causes Unigui to switch to the page with the selected row. 
+If the selected row is not on the currently visible page then setting "show = True" table parameter causes Unigui to switch to the page with the selected row. 
 
 ### Table handlers. ###
 complete, modify and update have the same format as the others elements, but value is consisted from the cell value and its position in the table.
-'update' is called when the user presses the Enter, 'modify' when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by
-setting 'edit = False' in Table constructor.
+"update" is called when the user presses the Enter, "modify" when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by
+setting "edit = False" in Table constructor.
 They can return Error or Warning if the value is not accepted, othewise the handler has to call accept_rowvalue(table, value) for accepting the value.
 ```
 def table_updated(table_, tabval):
@@ -275,30 +281,30 @@ def table_updated(table_, tabval):
     #check value
     ...
     if error_found:
-        return Error('Can not accept the value!')
+        return Error("Can not accept the value!")
     accept_rowvalue(_, value)
 ```
-The 'changed' table handler accept the selected row number or id as a value.
+The "changed" table handler accept the selected row number or id as a value.
 
-'editing' handler is called when the user switches the table edit mode. it is optional and has signature editing(table, edit_mode_now) where the second parameter says the table is being edited or not.
+"editing" handler is called when the user switches the table edit mode. it is optional and has signature editing(table, edit_mode_now) where the second parameter says the table is being edited or not.
 
 ### Chart ###
-Chart is a table with additional Table constructor parameter 'view' which explaines unigui how to draw a chart. The format is '{x index}-{y index1},{y index2}[,..]'. '0-1,2,3' means that x axis values will be taken from 0 column, and y values from 1,2,3 columns of row data.
-'i-3,5' means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If a table constructor got view = '..' parameter then unigui displays a chart icon at the table header, pushing it switches table mode to the chart mode. If a table constructor got type = 'view' in addition to view parameter the table will be displayed as chart on start. In the chart mode pushing the icon button on the top right switches back to table row mode.
+Chart is a table with additional Table constructor parameter "view" which explaines unigui how to draw a chart. The format is "{x index}-{y index1},{y index2}[,..]". "0-1,2,3" means that x axis values will be taken from 0 column, and y values from 1,2,3 columns of row data.
+"i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If a table constructor got view = ".." parameter then unigui displays a chart icon at the table header, pushing it switches table mode to the chart mode. If a table constructor got type = "view" in addition to view parameter the table will be displayed as chart on start. In the chart mode pushing the icon button on the top right switches back to table row mode.
 
 ### Signals ###
-Unigui supports a dedicated signal event handling mechanism. They are useful in table fields and shared blocks when the containing blocks and screens must respond to their elements without program linking. If a string in a table field started from @ then it considered as a signal. If the user clicks such field in non-edit mode then Unigui generates a signal event, which comes to dispatch function of its containters. First Unigui look at the element block, if not found than at the screen, if not found User.dispatch will be called, which can be redefined for such cases. Any handler can return Signal(element_that_generated_the_event, '@the_event_value') which will be processed.
+Unigui supports a dedicated signal event handling mechanism. They are useful in table fields and shared blocks when the containing blocks and screens must respond to their elements without program linking. If a string in a table field started from @ then it considered as a signal. If the user clicks such field in non-edit mode then Unigui generates a signal event, which comes to dispatch function of its containters. First Unigui look at the element block, if not found than at the screen, if not found User.dispatch will be called, which can be redefined for such cases. Any handler can return Signal(element_that_generated_the_event, "@the_event_value") which will be processed.
 
 
 ### Dialog ###
 ```
 Dialog(name, text, callback, buttons, content = None)
 ```
-where buttons is a list of the dialog buttons like ['Yes','No', 'Cancel'].
+where buttons is a list of the dialog buttons like ["Yes","No", "Cancel"].
 Dialog callback has the signature as other with value = pushed button name
 ```
 def dicallback(current_dialog, bname):
-    if bname == 'Yes':
+    if bname == "Yes":
         do_this()
     elif ..
 ```
@@ -320,21 +326,21 @@ They are returned by handlers and cause appearing on the top screen colored rect
 3. Saves and restores the state of the unigui session of the user. Mirrors a session to other users, works simultaneously in one session for many users. 
 
 
-### Milti-user programming? You don't need it! ###
+### Milti-user programming? You don"t need it! ###
 Unigui automatically creates and serves an environment for every user.
 The management class is User which contains all required methods for processing and handling the user activity. A programmer can redefine methods in the inherited class, point it as system user class and that is all. Such methods suit for history navigation, undo/redo and initial operations. The screen folder contains screens which are recreated for every user. The same about blocks. The code and modules outside that folders are common for all users as usual. By default Unigui use the system User class and you do not need to point it. If we need special user class logic, we can define own inheritor User.
 ```
 class Hello_user(unigui.User):
     def __init__(self):
         super().__init__()
-        print('New Hello user connected and created!')
+        print("New Hello user connected and created!")
     def dispatch(self, elem, ref):
         if http_link(ref[1:]):
             open_inbrowser()
         else:
-            return Warning(f'What to do with {ref}?') 
+            return Warning(f"What to do with {ref}?") 
 
-unigui.start('Hello app', user_type = Hello_user)
+unigui.start("Hello app", user_type = Hello_user)
 ```
 In screens and blocks sources we can access the user by call get_user()
 ```

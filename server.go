@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
 	"github.com/hashicorp/go-getter"
 )
 
@@ -17,16 +18,17 @@ var (
 	UploadDir    = "upload"
 )
 
-func init(){
-   dir, err := os.Getwd()
-   if err != nil {
-	   fmt.Print(dir)
-   }
-   dir += "/web"
-   if _, err := os.Stat(dir); os.IsNotExist(err) {
-	   getter.Get(dir, "github.com/Claus1/unigui-go//web")
-	   fmt.Print("web files downloaded.")
-   }		
+//download web files if do not exist
+func init() {
+	dir, err := os.Getwd()
+	if err != nil {
+		fmt.Print(dir)
+	}
+	dir += "/web"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		getter.Get(dir, "github.com/Claus1/unigui-go//web")
+		fmt.Print("web files downloaded.")
+	}
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +43,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		http.ServeFile(w, r, path)
+
 	} else if r.Method == "POST" {
 		err := r.ParseMultipartForm(10 << 20) // grab the multipart form
 		if err != nil {
@@ -70,6 +73,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func Start() {
+
 	flag.Parse()
 	hub := newHub()
 	go hub.run()

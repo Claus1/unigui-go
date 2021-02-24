@@ -22,6 +22,7 @@ type (
 		Changed    Handler
 		Type, Icon string
 	}
+
 	Edit_ struct {
 		Name             string
 		Value            Any
@@ -30,6 +31,7 @@ type (
 		Complete, Update Handler
 		Edit             bool
 	}
+
 	Image_ struct {
 		Name    string
 		Value   Any
@@ -39,6 +41,7 @@ type (
 		Width   int
 		Height  int
 	}
+
 	Select_ struct {
 		Name       string
 		Value      Any
@@ -46,12 +49,14 @@ type (
 		Type, Icon string
 		Options    []string
 	}
+
 	arr3str = [][3]string
 
 	optLevel struct {
 		s3    [3]string
 		level int
 	}
+
 	Tree_ struct {
 		Name       string
 		Value      Any
@@ -60,6 +65,7 @@ type (
 		Options    [][2]string
 		elems      arr3str
 	}
+
 	Signal struct {
 		Maker Any
 		Value string
@@ -67,7 +73,7 @@ type (
 
 	Popwindow struct {
 		Error, Warning, Info string
-		Data, Update    Any		
+		Data, Update         Any
 	}
 )
 
@@ -105,8 +111,9 @@ func Switch(name string, value bool, changed Handler) *Gui {
 }
 
 func Text(str string) *Edit_ {
-	return &Edit_{Name: str, Value : "", Edit: false}
+	return &Edit_{Name: str, Value: "", Edit: false}
 }
+
 func Edit(name string, value Any, changed Handler) *Edit_ {
 	g := &Edit_{Name: name, Value: value, Changed: changed, Edit: true}
 	if changed == nil {
@@ -153,6 +160,7 @@ func Image(name string, image string, click Handler, wh ...int) *Image_ {
 	}
 	return g
 }
+
 func Tree(name string, value string, selected Handler, fields *map[string]string) *Tree_ {
 	t := &Tree_{Name: name, Value: value, Changed: selected}
 	if selected == nil {
@@ -164,6 +172,7 @@ func Tree(name string, value string, selected Handler, fields *map[string]string
 	t.SetMapFields(fields)
 	return t
 }
+
 func (s *Tree_) SetFields(elems arr3str) {
 	s.elems = elems
 	s.Type = list
@@ -205,6 +214,7 @@ func (s *Tree_) SetFields(elems arr3str) {
 		s.Options = append(s.Options, [2]string{str, e.s3[1]})
 	}
 }
+
 func (s *Tree_) SetMapFields(fields *map[string]string) {
 	elems := make(arr3str, len(*fields))
 	i := 0
@@ -283,17 +293,17 @@ type (
 		Prepare, Save      func()
 		Toolbar            []*Gui
 		Dispatch           Handler
-		handlers           []elemHandle		
+		handlers           []elemHandle
 	}
 )
 
 type elemHandle struct {
-	gui Any
+	gui      Any
 	nameFunc string
-	handler Handler
+	handler  Handler
 }
-//Dialog{"Dialog", "Answer pls..", nil, []string{"Yes", "No"}, dialogCallback}
-func Dialog(name string, text string, callback Handler, buttons ...string)* Dialog_{
+
+func Dialog(name string, text string, callback Handler, buttons ...string) *Dialog_ {
 	return &Dialog_{name, text, nil, buttons, callback}
 }
 
@@ -302,10 +312,10 @@ func (s *Screen_) Handle(gui Any, nameFunc string, handler Handler) {
 }
 
 func Block(name string, top_childs []Any, childs ...Any) *Block_ {
-	if top_childs == nil{
+	if top_childs == nil {
 		top_childs = make([]Any, 0)
 	}
-	if childs == nil{
+	if childs == nil {
 		childs = make([]Any, 0)
 	}
 	return &Block_{Name: name, Top_childs: top_childs, Childs: childs}

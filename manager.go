@@ -271,14 +271,16 @@ func (u *User) prepareResult(val Any) Any {
 			popwin.Update = u.findPath(popwin.Data)
 		}
 	} else if _, ok := val.(Answer); !ok {
-		if arr, ok := val.([]Any); ok {
-			path := []Any{}
-			for _, e := range arr {
-				path = append(path, u.findPath(e))
+		if _, di := val.(*Dialog_); !di {
+			if arr, ok := val.([]Any); ok {
+				path := []Any{}
+				for _, e := range arr {
+					path = append(path, u.findPath(e))
+				}
+				val = Updater{path, val, true}
+			} else { //1 elem
+				val = Updater{u.findPath(val), val, false}
 			}
-			val = Updater{path, val, true}
-		} else { //1 elem
-			val = Updater{u.findPath(val), val, false}
 		}
 	}
 	return val
