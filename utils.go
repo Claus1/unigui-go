@@ -33,6 +33,11 @@ type Answer struct {
 	Id     int `json:"id"`
 }
 
+type Updater struct {
+	Update, Data Any
+	Multi        bool
+}
+
 func ToJson(o Any) []byte {
 	b, err := json.Marshal(o)
 	if err != nil {

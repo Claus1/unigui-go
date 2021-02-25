@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
 	"github.com/hashicorp/go-getter"
 )
 
@@ -27,11 +28,11 @@ func init() {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		fmt.Print("downloading web files...")
 		getter.Get(dir, "github.com/Claus1/unigui-go//web")
-		fmt.Print("web files are downloaded. unigui is ready to use.")
+		fmt.Print(" done!. unigui is ready to use.")
 	}
 }
 
-func serveHome(w http.ResponseWriter, r *http.Request) {
+func serveHttp(w http.ResponseWriter, r *http.Request) {
 
 	path := r.URL.Path
 	i := strings.Index(path, "?")
@@ -79,7 +80,7 @@ func Start() {
 	go hub.run()
 
 	mxHTTP := http.NewServeMux()
-	mxHTTP.HandleFunc("/", serveHome)
+	mxHTTP.HandleFunc("/", serveHttp)
 	go func() {
 		http.ListenAndServe(ResourcePort, mxHTTP)
 	}()

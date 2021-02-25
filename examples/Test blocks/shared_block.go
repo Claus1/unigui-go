@@ -29,7 +29,7 @@ func callDialog(value Any) Any{
 }
 
 func dialogCallback(pressedButton Any) Any{
-	return &Popwindow{Warning : F("The user pressed the button %v", pressedButton)} 
+	return Warning(F("The user pressed the button %v", pressedButton)) 
 }
 
 func deleteRow(t* Table_, value Any) Any{	
@@ -54,7 +54,7 @@ func sharedAudios(user* User) Any{
 	table.View = "i-1,2"
 
 	table.Modify = func(tvalue TableCell) Any{
-		return Error(F("%v is not modified to %v",table.Name, tvalue.Value))
+		return false
 	}			
 	table.Update = func(tvalue TableCell) Any{
 		AcceptRowValue(table, &tvalue)

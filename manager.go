@@ -185,7 +185,7 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 	}
 	name := msg[1].(string)
 	val := msg[3]
-	blockName := msg[1]
+	blockName := msg[0]
 	funcName, ok := sign2funcName[sign]
 	var res Any
 	if ok {
@@ -212,7 +212,12 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 
 		} else if ch, isCH := hi.(CellHandler); isCH {
 
-			res = ch(*any2cellVal(val))
+			tCell := any2cellVal(val)
+			res = ch(*tCell)
+			if res == false {
+				AcceptRowValue(elem.(*Table_), tCell)
+				return nil
+			}
 		} else {
 			panic(F("%s.%s has unknown type!", name, funcName))
 		}
@@ -260,33 +265,31 @@ func (u *User) findPath(elem Any) []string {
 	return []string{block.Name, n.(string)}
 }
 
-type Updater struct {
-	Update, Data Any
-	Multi        bool
-}
-
 func (u *User) prepareResult(val Any) Any {
 	if val == true {
 		val = u.screen
 		if u.screen.Prepare != nil {
 			u.screen.Prepare()
 		}
-	} else if popwin, ok := val.(*Popwindow); ok {
-		if popwin.Data != nil {
-			popwin.Update = u.findPath(popwin.Data)
-		}
-	} else if _, ok := val.(Answer); !ok {
-		if _, di := val.(*Dialog_); !di {
-			if arr, ok := val.([]Any); ok {
-				path := []Any{}
-				for _, e := range arr {
-					path = append(path, u.findPath(e))
-				}
-				val = Updater{path, val, true}
-			} else { //1 elem
-				val = Updater{u.findPath(val), val, false}
+	} else {		
+		switch val.(type){
+		case Answer, *Dialog_:
+			{}
+		case []Any:
+			arr := val.([]Any) 
+			path := []Any{}
+			for _, e := range arr {
+				path = append(path, u.findPath(e))
 			}
-		}
+			val = Updater{path, val, true}
+		case *Popwindow:
+			popwin := val.(*Popwindow)
+			if popwin.Data != nil {
+				popwin.Update = u.findPath(popwin.Data)
+			}
+		default:				
+			val = Updater{u.findPath(val), val, false}		
+		}	
 	}
 	return val
 }

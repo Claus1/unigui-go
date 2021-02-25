@@ -53,18 +53,19 @@ Connect a browser to localhast:8080 and will see:
 ### Handling events ###
 All handlers are functions which have a signature
 ```
-func handler_x( value_x interface{}) interface{}
+func handlerX( valueX interface{}) interface{}
 ```
-where value_x is a value for the event.
+where valueX is a value for the event.
 
-All Gui objects except Button have a field ‘Value’. 
-For an edit field the value is a string or number, for a switch or check button the value is boolean, for table is row id or index, e.t.c.
+All Gui objects have a field ‘Value’. 
+For an edit field the value is a string or number, for a switch or check button the value is boolean, for table is row id or int index, e.t.c.
 When a user changes the value of the Gui object or presses Button, the server calls the ‘Changed’ function handler.
 
 ```
 cleanTable := func(v Any) Any{
-	table.Rows = SeqSeq()
-	return nil
+	table.Rows = SeqSeq() //empty [][]Any
+    
+	return table          //table is changed, just return it for updating on the screen
 }
 cleanButton := Button("Clean table", cleanTable, "")
 ```
@@ -228,84 +229,78 @@ Select can be such type "toggles","dropdown". Unigui automatically chooses betwe
 but the user can set preferrable type then Unigui build it as the user want.
 
 #### Image. #### 
-width,changed and height are optional, changed is called if the user click or touch the image.
+Width, and Height are optional, click is called if the user click or touch the image, can be nil as all Hadlers
 ```
-Image("Image", image = "some url", changed = show_image_info, width = .., height = ..)
-or short version
-Image("Image", "some url", show_image_info, width = .., height = ..)
+func Image(name string, image string, click Handler, wh ...int) *Image_
 
 ```
 
 #### Tree. The element for tree-like data. ####
 ```
-Tree(name, selected_item_key, changed_handler, [unique_elems = .., elems = ..])
+func Tree(name string, value string, selected Handler, fields *map[string]string) *Tree_
 ```
-unique_elems for the data without repeating names, it is dictionary {item_name:parent_name}. If "unique_elems" defined then "elems" is redundant.
-"elems" for data which can contain repeating names. it is array of arrays [item_name,item_key,parent_key].
-parent_name and parent_key are None for root items. changed_handler gets the tree object and item key as value which is the item name for unique items. 
+fields for the tree data {item_name:parent_name}.
+
+parent_name is "" for root items. selected is called when the user clicks on a tree item. 
 
 ### Table. ###
-Tables is common structure for presenting 2D data and charts. Can contain append, delete, update handlers, multimode parameter is True if allowed single and multi select mode. True by default. All of them are optional. When you add a handler for such action Unigui will draw an appropriate action icon button in the table header automatically.
+Tables is common structure for presenting 2D data and charts. Can contain Append, Delete, Update handlers, Multimode parameter is True if allowed single and multi select mode. True by default. All of them are optional. When you assign a handler for such action Unigui will draw the appropriate action icon button in the table header automatically.
+If Modify and Update are not defined, unigui will not draw Edit button and user can not edit the table data. The same rule for Delete, Append, e.t.c.
 ```
-table = Table("Videos", [0], row_changed, headers = ["Video", "Duration", "Owner", "Status"],  
-  rows = [
-    ["opt_sync1_3_0.mp4", "30 seconds", "Admin", "Processed"],
-    ["opt_sync1_3_0.mp4", "37 seconds", "Admin", "Processed"]
-  ], 
-  multimode = false, update = update)
+func Table(name string, value Any, selected Handler, headers []string, rows [][]Any) *Table_
 ```
 If "headers" length is equal "rows" length Unigui counts rows id as an index in rows array.
 If "rows" length is "headers" length + 1, Unigui counts rows id as the last row field.
 So it is possible to use some keys as row ids just by adding it to the row as the last element.
-If table does not contain append, delete arguments, then it will be drawn without add and remove icons.  
-value = [0] means 0 row is selected in multiselect mode (in array). multimode is False so switch icon for single select mode will be not drawn and switching to single select mode is not allowed.
+value == [0] means 0 row is selected in multiselect mode (in array). value = 1 means rows at 1 index is selected in sinlge mode selection.
 
-
-By default Table has toolbar with search field and icon action buttons. It is possible to hide it if set "tools = False" in the Table constructor.
+By default Table has toolbar with search field and icon action buttons. It is possible to hide it if set "Tools" table variable to false.
 
 Table shows a paginator if all rows can not be drawn on the screen. Otherwise a table paginator is redundant and omitted.
 
 If the selected row is not on the currently visible page then setting "show = True" table parameter causes Unigui to switch to the page with the selected row. 
 
 ### Table handlers. ###
-complete, modify and update have the same format as the others elements, but value is consisted from the cell value and its position in the table.
-"update" is called when the user presses the Enter, "modify" when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by
-setting "edit = False" in Table constructor.
-They can return Error or Warning if the value is not accepted, othewise the handler has to call accept_rowvalue(table, value) for accepting the value.
+Complete, Modify and Update are CellHandlers where CellHandler = func(cellValue TableCell) Any .
+cellValue is consisted from the cell value and its position in the table.
 ```
-def table_updated(table_, tabval):
-    value, position = tabval
-    #check value
-    ...
-    if error_found:
-        return Error("Can not accept the value!")
-    accept_rowvalue(_, value)
+TableCell struct {
+		Value Any
+		Where [2]int
+	}
 ```
-The "changed" table handler accept the selected row number or id as a value.
+"Update" is called when the user presses the Enter, "Modify" when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by setting the table variale "Edit" to false.
+They can return Error or Warning if the value is not accepted, othewise false for accepting the value (false means continue the standart process).
+```
+table.Update = func(tvalue TableCell) Any{
+    AcceptRowValue(table, &tvalue)
+    return Warning(F("%v is updated to %v",table.Name, tvalue.Value))
+}
+```
+The "Changed" table handler accepts the selected row number or id as a value.
 
-"editing" handler is called when the user switches the table edit mode. it is optional and has signature editing(table, edit_mode_now) where the second parameter says the table is being edited or not.
+"Editing" handler is called when the user switches the table edit mode. it is optional and has standart signature where the parameter says the table is being edited or not.
 
 ### Chart ###
-Chart is a table with additional Table constructor parameter "view" which explaines unigui how to draw a chart. The format is "{x index}-{y index1},{y index2}[,..]". "0-1,2,3" means that x axis values will be taken from 0 column, and y values from 1,2,3 columns of row data.
-"i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If a table constructor got view = ".." parameter then unigui displays a chart icon at the table header, pushing it switches table mode to the chart mode. If a table constructor got type = "view" in addition to view parameter the table will be displayed as chart on start. In the chart mode pushing the icon button on the top right switches back to table row mode.
+Chart is a table with additional Table constructor parameter "View" which explaines unigui how to draw a chart. The format is "{x index}-{y index1},{y index2}[,..]". "0-1,2,3" means that x axis values will be taken from 0 column, and y values from 1,2,3 columns of row data.
+"i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If a table constructor got View = ".." parameter then unigui displays a chart icon at the table header, pushing that switches table mode to the chart mode. If a table constructor set Type to "view" in addition to "View" parameter the table will be displayed as chart on start. In the chart mode pushing the icon button on the top right switches back to table row mode.
 
 ### Signals ###
-Unigui supports a dedicated signal event handling mechanism. They are useful in table fields and shared blocks when the containing blocks and screens must respond to their elements without program linking. If a string in a table field started from @ then it considered as a signal. If the user clicks such field in non-edit mode then Unigui generates a signal event, which comes to dispatch function of its containters. First Unigui look at the element block, if not found than at the screen, if not found User.dispatch will be called, which can be redefined for such cases. Any handler can return Signal(element_that_generated_the_event, "@the_event_value") which will be processed.
+Unigui supports a dedicated signal event handling mechanism. They are useful in table fields and shared blocks when the containing blocks and screens must respond to their elements without program linking. If a string in a table field started from @ then it considered as a signal. If the user clicks such field in non-edit mode then Unigui generates a signal event, which pop-up to dispatch functions of its containters. First Unigui look at the element block, if not found than at the screen, if not found User.Dispatch will be called, which can be redefined for such cases. Any handler can return Signal(element_that_generated_the_event, "the_event_value") which will be processed.
 
 
 ### Dialog ###
 ```
-Dialog(name, text, callback, buttons, content = None)
+func Dialog(name string, text string, callback Handler, buttons ...string) *Dialog_
 ```
 where buttons is a list of the dialog buttons like ["Yes","No", "Cancel"].
-Dialog callback has the signature as other with value = pushed button name
+Dialog callback has the signature as other with value == pushed button name
 ```
-def dicallback(current_dialog, bname):
-    if bname == "Yes":
-        do_this()
-    elif ..
+func dialogCallback(pressedButton Any) Any{
+	return Warning(F("The user pressed the button %v", pressedButton))
+}
 ```
-content can be filled by any Gui element sequence for additional dialog functionality.
+Content dialog field can be filled by any Block for additional dialog functionality.
 
 ### Popup windows ###
 They are intended for non-blocking displaying of error messages and informing about some events, for example, incorrect user input and the completion of a long process on the server.
@@ -315,41 +310,45 @@ Warning(warning_message)
 Error(error_message)
 UpdateError(updated_element, error_nessage)
 ```
-They are returned by handlers and cause appearing on the top screen colored rectangles window for 3 second. UpdateError also says Unigui to update changed updated_element.
+They are returned by handlers and cause appearing on the top screen colored rectangles window for 3 second. UpdateError also says Unigui to update updated_element.
 
 ### Other subtle benefits of a Unigui protocol and technology. ###
-1. Works with any set of resource process servers as a single system, within the same GUI user space, carries out any available operations, including cross, on the fly, without programming.
+1. Possible to works with any set of resource process servers as a single system, within the same GUI user space, carries out any available operations, including cross, on the fly, without programming.
 2. Reproduces and saves sequences of the user interaction with the system without programming. It can be used for complex testing, supporting of security protocols and more.
-3. Saves and restores the state of the unigui session of the user. Mirrors a session to other users, works simultaneously in one session for many users. 
+3. Possible to mirror a session to other users, works simultaneously in one session for many users. 
 
 
 ### Milti-user programming? You don"t need it! ###
 Unigui automatically creates and serves an environment for every user.
-The management class is User which contains all required methods for processing and handling the user activity. A programmer can redefine methods in the inherited class, point it as system user class and that is all. Such methods suit for history navigation, undo/redo and initial operations. The screen folder contains screens which are recreated for every user. The same about blocks. The code and modules outside that folders are common for all users as usual. By default Unigui use the system User class and you do not need to point it. If we need special user class logic, we can define own inheritor User.
+The management class is User which contains all required methods for processing and handling the user activity. A programmer can assign methods 
 ```
-class Hello_user(unigui.User):
-    def __init__(self):
-        super().__init__()
-        print("New Hello user connected and created!")
-    def dispatch(self, elem, ref):
-        if http_link(ref[1:]):
-            open_inbrowser()
-        else:
-            return Warning(f"What to do with {ref}?") 
-
-unigui.start("Hello app", user_type = Hello_user)
+Dispatch                        func(*User, Signal) Any
+Save, Back, Forward, Undo, Redo func(User) Any
+//also store and use any data in User.Extention which is defined as 
+Extension  map[string]Any
 ```
-In screens and blocks sources we can access the user by call get_user()
+Such methods suit for history navigation, undo/redo and initial operations.
+
+For constructing custom User use UserConstuctor variable which return new User for any new session.
 ```
-user = get_user()
-print(isinstance(user, Hello_user))
-```
+UserConstuctor = func() *User{
+    user := User
+    //assign custom function
+    ..
+    return &user
+}
 
-More info about User class methods you can find in manager.py in the root dir.
+The code and modules outside that folders are common for all users as usual. By default Unigui UserConstuctor creates a user with empty behavior function and fields. ```
 
-Examples are in tests folder.
 
-The articles about Unigui and its protocol in details:
+In screen and shared block functions User automatically acccesible as a function argument.
+
+
+More info about User class and methods you can find in manager.go in the root dir.
+
+Examples are in examples folder.
+
+The articles about Unigui and its protocol:
 
 in English https://docs.google.com/document/d/1G_9Ejt9ETDoXpTCD3YkR8CW508Idk9BaMlD72tlx8bc/edit?usp=sharing
 

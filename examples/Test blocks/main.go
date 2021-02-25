@@ -11,7 +11,7 @@ func screenTest(user* User)* Screen_{
 		
 	cleanTable := func(v Any) Any{
 		table.Rows = SeqSeq()
-		return nil
+		return table
 	}
 	cleanButton := Button("Clean table", cleanTable, "")
 
