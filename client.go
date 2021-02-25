@@ -143,10 +143,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// new goroutines.
 	go client.writePump()
 	go client.readPump()
-
-	user := User{}
-	user.init()
-	client.user = &user
-	client.send <- ToJson([]Any{menu, user.screen})
-
+	
+	client.user = UserConstructor()
+	client.send <- ToJson([]Any{menu, client.user.screen})
 }

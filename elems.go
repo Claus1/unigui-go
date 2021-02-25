@@ -268,6 +268,10 @@ func Table(name string, value Any, selected Handler, headers []string, rows [][]
 		}
 	}
 	t.Tools = true
+	t.Modify = func(cellValue TableCell) Any{
+		AcceptRowValue(t, &cellValue)
+		return nil
+	}
 	return t
 }
 

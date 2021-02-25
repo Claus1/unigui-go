@@ -71,7 +71,7 @@ func call(u User, f func(User) Any) Handler {
 		return f(u)
 	}
 }
-func (user *User) init() {
+func (user *User) Init() {
 	user.Toolbar = []*Gui{
 		Button("_Back", call(*user, user.Back), "arrow_back"),
 		Button("_Forward", call(*user, user.Forward), "arrow_forward"),
@@ -82,10 +82,16 @@ func (user *User) init() {
 
 	user.screens = map[string]*Screen_{}
 
-	user.setScreen("") //0 order
+	user.SetScreen("") //0 order
 }
 
-func (user *User) setScreen(name string) bool {
+var UserConstructor = func() *User {
+	user := User{}
+	user.Init()
+	return &user
+}
+
+func (user *User) SetScreen(name string) bool {
 	if name == "" {
 		name = menu[0][0].(string)
 	}
@@ -156,7 +162,7 @@ func (u *User) handleMessage(msg []Any) Any {
 func (u *User) processMessage(arr []Any) Any {
 	if arr[0] == "root" {
 		nameScr := arr[1].(string)
-		u.setScreen(nameScr)
+		u.SetScreen(nameScr)
 		return u.screen
 	}
 	elem := u.findElement(arr)
@@ -192,7 +198,7 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 		for _, eh := range u.screen.handlers {
 			if eh.elemName == name && blockName == eh.blockName && eh.nameFunc == funcName {
 				hres := eh.handler(val)
-				if hres != false { 
+				if hres != false {
 					return hres
 				} else {
 					break //causes call the inner element handler
@@ -271,12 +277,13 @@ func (u *User) prepareResult(val Any) Any {
 		if u.screen.Prepare != nil {
 			u.screen.Prepare()
 		}
-	} else {		
-		switch val.(type){
+	} else {
+		switch val.(type) {
 		case Answer, *Dialog_:
-			{}
+			{
+			}
 		case []Any:
-			arr := val.([]Any) 
+			arr := val.([]Any)
 			path := []Any{}
 			for _, e := range arr {
 				path = append(path, u.findPath(e))
@@ -287,9 +294,9 @@ func (u *User) prepareResult(val Any) Any {
 			if popwin.Data != nil {
 				popwin.Update = u.findPath(popwin.Data)
 			}
-		default:				
-			val = Updater{u.findPath(val), val, false}		
-		}	
+		default:
+			val = Updater{u.findPath(val), val, false}
+		}
 	}
 	return val
 }

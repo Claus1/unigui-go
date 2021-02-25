@@ -24,7 +24,7 @@ The block example with a table, button and selector
 ```
 package main
 
-import . "unigui"		
+import . "github.com/Claus1/unigui-go"
 
 func screenTest(user* User)* Screen_{	
 	table := Table("Videos",0, nil, []string{"Video", "Duration",  "Links", "Mine"},
@@ -49,6 +49,13 @@ Unigui builds the interactive app for the code above.
 Connect a browser to localhast:8080 and will see:
 
 ![alt text](https://github.com/Claus1/unigui/blob/main/tests/screen1.png?raw=true)
+Possible to define ports and upload directory before Start call.
+By default they are
+```
+ResourcePort = ":8000"
+WsocketPort  = ":1234" 
+UploadDir    = "upload"
+```
 
 ### Handling events ###
 All handlers are functions which have a signature
@@ -63,8 +70,8 @@ When a user changes the value of the Gui object or presses Button, the server ca
 
 ```
 cleanTable := func(v Any) Any{
-	table.Rows = SeqSeq() //empty [][]Any
-    
+
+	table.Rows = SeqSeq() //empty [][]Any    
 	return table          //table is changed, just return it for updating on the screen
 }
 cleanButton := Button("Clean table", cleanTable, "")
@@ -79,9 +86,9 @@ func SeqSeq(arr ...[]Any) [][]Any{
 	return arr
 }
 ```
-‘Changed’ handlers have to return Gui object or array(Seq) of Gui objects that were changed by the handler and Unigui has to redraw or does nothing if all visible elements have the same state. Unigui will do all other jobs for synchronizing automatically. If a Gui object doesn"t have "Changed" handler the object accepts incoming value automatically to the "Value" variable of gui object.
+‘Changed’ handlers have to return Gui object or array(Seq) of Gui objects that were changed by the handler and Unigui has to redraw or does nothing if all visible elements have the same state. Unigui will do all other jobs for synchronizing automatically. Gui objects out of box have "Changed" handlers which accepts incoming value automatically to the "Value" variable of gui object. Can be redefined by the user.
 
-If "Value" is not acceptable instead of returning an object possible to return Info, Error or Warning or UpdateError pop-up window. The last function has a object parameter, which has to be synchronized simultaneously with informing about the Error.
+If "Value" is not acceptable instead of returning an object possible to return Info, Error or Warning or UpdateError pop-up window. The last function has an object parameter, which has to be synchronized simultaneously with informing about the Error.
 
 ```
 selector := Select("Select", "All", nil, []string{"All","Based","Group"})
@@ -90,6 +97,7 @@ selector.Changed = func(v Any) Any{
     if v == "Based"{
         return UpdateError(selector, "Select can not be Based!")
     }
+	selector.Value = v
     return nil
 })	
 ```
@@ -98,12 +106,12 @@ selector.Changed = func(v Any) Any{
 If the handler returns nil Unigui considers it as Ok and does nothing.
 
 ### Block details ###
-The width and height of blocks is calculated automatically depending on their children. It is possible to set the block width and make it scrollable in height, for example for images list. Possible to add MD icon to the header, if required. Width, scroll, .. are optional. Block helper is
+The width and height of blocks is calculated automatically depending on their children. It is possible to set the block width and make it scrollable in height, for example for images list. Possible to add MD icon to the header, if required. Width, Scroll, Height .. are optional. Block helper is
 ```
-func Block(name string, top_childs []Any, childs ...Any) *Block_ 
+func Block(name string, topChilds []Any, childs ...Any) *Block_ 
 ```
  
-The top_childs parameter of the Block constructor is an array of widgets which has to be in the header just after the block name.
+The topChilds parameter of the Block constructor is an array of widgets which has to be in the header just after the block name.
 Blocks can be shared between the user screens with its states. Such a block has to be declared inside Block making function and registered by call ShareBlock(myBlock).
 Examples of such block examples/shared_block.go:
 ```
@@ -122,9 +130,10 @@ func main(){
 	...
 }
 ```
+Block making function returns Any becuase it is possible to return a block combination, which has []Any type.
+See example such combination in examples/Test blocks/shared_block.go
 
-
-If some elements are enumerated inside an array, Unigui will display them on a line, otherwise everyone will be displayed on a new own line(s).
+If child elements are enumerated inside an array, the block will display them on a line, otherwise everyone will be displayed on a new own line(s).
  
 Using a shared block in some screen:
 ```
@@ -156,14 +165,14 @@ screen = Screen(Seq(b1,b2), Seq(b3, Seq(b4, b5)))
 
 ### Basic gui elements ###
 
-#### If the element name starts from _ , Unigui will not show its name on the screen. ####
+#### If the element name starts from _ , Unigui will hide its name. ####
 if we need to paint an icon in the element, set the element "Icon" to "any MD icon name".
 
 Common form for element constructors:
 ```
 gui := Gui(name string, value Any, changed Handler)
 ```
-changed Handler normally is not used directly.
+changed Handler is called when the user has changed the element value.
 
 #### Button ####
 Normal button.
@@ -190,10 +199,10 @@ handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_f
 
 #### Edit and Text field. ####
 ```
-Edit("Name", "value", changed_handler) #for string value
+Edit(name string, value Any, changed_handler) 
 numEdit := Edit("Number field", 0.9, nil) #for edit number
 ```
-If set Edit = false it will be readonly field or text label.
+If set Edit = false it will be readonly field.
 ```
 numEdit.Edit = false
 
@@ -229,7 +238,7 @@ Select can be such type "toggles","dropdown". Unigui automatically chooses betwe
 but the user can set preferrable type then Unigui build it as the user want.
 
 #### Image. #### 
-Width, and Height are optional, click is called if the user click or touch the image, can be nil as all Hadlers
+width, and height are optional wh, click is called if the user click or touch the image, can be nil as all Hadlers
 ```
 func Image(name string, image string, click Handler, wh ...int) *Image_
 
@@ -252,13 +261,13 @@ func Table(name string, value Any, selected Handler, headers []string, rows [][]
 If "headers" length is equal "rows" length Unigui counts rows id as an index in rows array.
 If "rows" length is "headers" length + 1, Unigui counts rows id as the last row field.
 So it is possible to use some keys as row ids just by adding it to the row as the last element.
-value == [0] means 0 row is selected in multiselect mode (in array). value = 1 means rows at 1 index is selected in sinlge mode selection.
+value == Seq(0) means 0 row is selected in multiselect mode (in array). value = 1 means rows at 1 index is selected in sinlge mode selection.
 
 By default Table has toolbar with search field and icon action buttons. It is possible to hide it if set "Tools" table variable to false.
 
-Table shows a paginator if all rows can not be drawn on the screen. Otherwise a table paginator is redundant and omitted.
+Table shows a paginator if all rows can not be drawn on the screen. Otherwise the table paginator is redundant and omitted.
 
-If the selected row is not on the currently visible page then setting "show = True" table parameter causes Unigui to switch to the page with the selected row. 
+If the selected row is not on the currently visible page then setting "Show" = true table parameter causes Unigui to switch to the page with the selected row. 
 
 ### Table handlers. ###
 Complete, Modify and Update are CellHandlers where CellHandler = func(cellValue TableCell) Any .
@@ -269,8 +278,8 @@ TableCell struct {
 		Where [2]int
 	}
 ```
-"Update" is called when the user presses the Enter, "Modify" when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by setting the table variale "Edit" to false.
-They can return Error or Warning if the value is not accepted, othewise false for accepting the value (false means continue the standart process).
+"Update" is called when the user presses the Enter, "Modify" when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by setting the table variable Modify to nil or Edit to false.
+They can return Error(..) or Warning(..) if the value is not accepted, othewise false for accepting the value (false means continue the standart process).
 ```
 table.Update = func(tvalue TableCell) Any{
     AcceptRowValue(table, &tvalue)
@@ -282,11 +291,12 @@ The "Changed" table handler accepts the selected row number or id as a value.
 "Editing" handler is called when the user switches the table edit mode. it is optional and has standart signature where the parameter says the table is being edited or not.
 
 ### Chart ###
-Chart is a table with additional Table constructor parameter "View" which explaines unigui how to draw a chart. The format is "{x index}-{y index1},{y index2}[,..]". "0-1,2,3" means that x axis values will be taken from 0 column, and y values from 1,2,3 columns of row data.
-"i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If a table constructor got View = ".." parameter then unigui displays a chart icon at the table header, pushing that switches table mode to the chart mode. If a table constructor set Type to "view" in addition to "View" parameter the table will be displayed as chart on start. In the chart mode pushing the icon button on the top right switches back to table row mode.
+Chart is a table with additional Table parameter "View" which explaines unigui how to draw a chart. The format is "{x index}-{y index1},{y index2}[,..]". "0-1,2,3" means that x axis values will be taken from 0 column, and y values from 1,2,3 columns of row data.
+"i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If the user set View parameter then unigui displays a chart icon at the table header, pushing that switches table mode to the chart mode. If a table constructor set Type to "view" in addition to "View" parameter the table will be displayed as a chart on start. In the chart mode pushing the icon button on the top right switches back to the table row mode.
+Chart example in examples/Test blocks/shared_block.go
 
 ### Signals ###
-Unigui supports a dedicated signal event handling mechanism. They are useful in table fields and shared blocks when the containing blocks and screens must respond to their elements without program linking. If a string in a table field started from @ then it considered as a signal. If the user clicks such field in non-edit mode then Unigui generates a signal event, which pop-up to dispatch functions of its containters. First Unigui look at the element block, if not found than at the screen, if not found User.Dispatch will be called, which can be redefined for such cases. Any handler can return Signal(element_that_generated_the_event, "the_event_value") which will be processed.
+Unigui supports a dedicated signal event handling mechanism. They are useful in table fields and shared blocks when the containing blocks and screens must respond to their elements without program linking. If a string in a table field started from @ then it considered as a signal. If the user clicks such field in non-edit mode then Unigui generates a signal event, which pop-up to dispatch functions of its containters. First Unigui look for Dispatch at the element block, if not found than at the screen, if not found User.Dispatch will be called, which can be defined for such cases. Any handler can return Signal(element_that_generated_the_event, "the_event_value") which will be processed.
 
 
 ### Dialog ###
@@ -303,7 +313,7 @@ func dialogCallback(pressedButton Any) Any{
 Content dialog field can be filled by any Block for additional dialog functionality.
 
 ### Popup windows ###
-They are intended for non-blocking displaying of error messages and informing about some events, for example, incorrect user input and the completion of a long process on the server.
+They are intended for non-blocking displaying of error messages and informing about some events, for example, incorrect user input or completion of a long process on the server.
 ```
 Info(info_message)
 Warning(warning_message)
@@ -313,7 +323,7 @@ UpdateError(updated_element, error_nessage)
 They are returned by handlers and cause appearing on the top screen colored rectangles window for 3 second. UpdateError also says Unigui to update updated_element.
 
 ### Other subtle benefits of a Unigui protocol and technology. ###
-1. Possible to works with any set of resource process servers as a single system, within the same GUI user space, carries out any available operations, including cross, on the fly, without programming.
+1. Possible to works with any set of resource process servers as a single system, within the same GUI user space, carries out any available operations, including cross, on the fly.
 2. Reproduces and saves sequences of the user interaction with the system without programming. It can be used for complex testing, supporting of security protocols and more.
 3. Possible to mirror a session to other users, works simultaneously in one session for many users. 
 
@@ -338,17 +348,15 @@ UserConstuctor = func() *User{
     return &user
 }
 
-The code and modules outside that folders are common for all users as usual. By default Unigui UserConstuctor creates a user with empty behavior function and fields. ```
+By default Unigui UserConstuctor creates a user with empty behavior functions and Extension fields. 
 
-
-In screen and shared block functions User automatically acccesible as a function argument.
-
+In screen and shared block functions User is automatically acccesible as the function argument.
 
 More info about User class and methods you can find in manager.go in the root dir.
 
 Examples are in examples folder.
 
-The articles about Unigui and its protocol:
+Few articles about Unigui and its protocol:
 
 in English https://docs.google.com/document/d/1G_9Ejt9ETDoXpTCD3YkR8CW508Idk9BaMlD72tlx8bc/edit?usp=sharing
 
