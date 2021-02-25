@@ -44,11 +44,11 @@ func screenTest(user* User)* Screen_{
 
 	scr :=  Screen(Seq(block, bottomBlock), user.SharedBlock("Audios"))	
 
-	scr.Handle(selector, "Changed", func(v Any) Any{
+	scr.Handle("Select", "X Block", "Changed", func(v Any) Any{
 		if v == "Based"{
 			return UpdateError(selector, "Select can not be Based!")
 		}
-		return nil
+		return false
 	})	
 	return scr
 }

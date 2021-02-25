@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
 	"github.com/hashicorp/go-getter"
 )
 
@@ -26,8 +25,9 @@ func init() {
 	}
 	dir += "/web"
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		fmt.Print("downloading web files...")
 		getter.Get(dir, "github.com/Claus1/unigui-go//web")
-		fmt.Print("web files downloaded.")
+		fmt.Print("web files are downloaded. unigui is ready to use.")
 	}
 }
 

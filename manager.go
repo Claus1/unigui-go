@@ -28,7 +28,7 @@ type (
 		Toolbar                         []*Gui
 		Dispatch                        func(*User, Signal) Any
 		Save, Back, Forward, Undo, Redo func(User) Any
-		extension                       map[string]Any
+		Extension                       map[string]Any
 	}
 	menuItem = [3]Any
 )
@@ -185,12 +185,18 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 	}
 	name := msg[1].(string)
 	val := msg[3]
+	blockName := msg[1]
 	funcName, ok := sign2funcName[sign]
 	var res Any
 	if ok {
 		for _, eh := range u.screen.handlers {
-			if eh.gui == elem && eh.nameFunc == funcName {
-				return eh.handler(val)
+			if eh.elemName == name && blockName == eh.blockName && eh.nameFunc == funcName {
+				hres := eh.handler(val)
+				if hres != false { 
+					return hres
+				} else {
+					break //causes call the inner element handler
+				}
 			}
 		}
 		hi, ok := getFieldValue(elem, funcName)
@@ -223,7 +229,6 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 			res = u.Dispatch(u, Signal{elem, val.(string)})
 		}
 	}
-
 	return res
 }
 

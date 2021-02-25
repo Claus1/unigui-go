@@ -6,7 +6,7 @@ Provide a programming technology that does not require front-end programming, fo
 
 ### Import ###
 ```
-import . "unigui"
+import . "github.com/Claus1/unigui-go"
 ```
 
 ### How does work inside ###
@@ -133,14 +133,14 @@ scr :=  Screen(Seq(block, bottomBlock), user.SharedBlock("Audios"))	//user is al
 
 #### Events interception of shared blocks ####
 Interception handlers have the same in/out format as usual handlers.
-#### They are called before the inner element handler call. They cancel the call of inner element handler but you can call it as shown below.
+#### They overrides inner element handler call. If such method returns false the  inner element handler will be calld. 
 For example above interception of select_mode changed event will be:
 ```
-screen.Handle(selector, "Changed", func(v Any) Any{
+screen.Handle(elemName string, blockName string, handlerName string, func(v Any) Any{
     if v == "Based"{
         return UpdateError(selector, "Select can not be Based!")
     }
-    return nil
+    return false //call the inner element handlers.
 })	
 ```
 
@@ -156,51 +156,48 @@ screen = Screen(Seq(b1,b2), Seq(b3, Seq(b4, b5)))
 ### Basic gui elements ###
 
 #### If the element name starts from _ , Unigui will not show its name on the screen. ####
-if we need to paint an icon somewhere in the element, set the element "Icon" to "any MD icon name".
+if we need to paint an icon in the element, set the element "Icon" to "any MD icon name".
 
 Common form for element constructors:
 ```
-Gui(name string, value Any, changed Handler)
+gui := Gui(name string, value Any, changed Handler)
 ```
-call the Changed function records value to Value field by default.
-```
-Changed(value) 
-```
+changed Handler normally is not used directly.
 
 #### Button ####
 Normal button.
 ```
-Button("Push me", push_callback, "") 
+Button(name string,push_callback Handler, icon string) 
 ```
-Icon button 
+Icon button : name is started form _ for hiding
 ```
 Button("_Check", push_callback, "check") //icon == "check" in MD icon list
 ```
 #### Load to server Button ####
 Special button provides file uploading from user device or computer to the Unigui server.
 ```
-UploadButton("Load", handler_when_loading_finish, icon)
+UploadButton(name string, handler_when_loading_finish Handler, icon string)
 ```
-handler_when_loading_finish(button_, the_loaded_file_filename) where the_loaded_file_filename is a file name in upload server folder. This folder name is global UploadDir parameter in unigui which can be changed before start().
+handler_when_loading_finish(the_loaded_file_filename) where the_loaded_file_filename is a file name in upload server folder. This folder name is global UploadDir parameter in unigui which can be changed before Start().
 
 #### Camera Button ####
 Special button provides to make a photo on the user mobile device. 
 ```
 CameraButton("Make a photo", handler_when_shooting_finish)
 ```
-handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is global UploadDir parameter in unigui which can be changed before start().
+handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is global UploadDir parameter in unigui which can be changed before Start().
 
 #### Edit and Text field. ####
 ```
 Edit("Name", "value", changed_handler) #for string value
-numEdit := Edit("Number field", 0.9, nil) #for numbers
+numEdit := Edit("Number field", 0.9, nil) #for edit number
 ```
-If set edit = false it will be readonly field or text label.
+If set Edit = false it will be readonly field or text label.
 ```
-numEdit.edit = false
+numEdit.Edit = false
 
 //Text field
-Text("Some field")
+Text("Some text")
 ```
 Complete handler is optional function which accepts the current field value and returns a string list for autocomplete.
 ```
@@ -210,7 +207,7 @@ edit.Complete = getCompleteList
 def getCompleteList(current_value Any):
     return []string{"option1","option2","option3"}    
 ```
-Can contain optional "Update" handler which is called when the user press Enter in the field.
+Possible to set "Update" handler which is called when the user press Enter in the field.
 It can return nil or Gui object(s) for updating as usual handler.
 
 

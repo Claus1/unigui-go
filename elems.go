@@ -298,7 +298,8 @@ type (
 )
 
 type elemHandle struct {
-	gui      Any
+	elemName string
+	blockName string
 	nameFunc string
 	handler  Handler
 }
@@ -307,8 +308,8 @@ func Dialog(name string, text string, callback Handler, buttons ...string) *Dial
 	return &Dialog_{name, text, nil, buttons, callback}
 }
 
-func (s *Screen_) Handle(gui Any, nameFunc string, handler Handler) {
-	s.handlers = append(s.handlers, elemHandle{gui, nameFunc, handler})
+func (s *Screen_) Handle(elemName string, blockName string, nameFunc string, handler Handler) {
+	s.handlers = append(s.handlers, elemHandle{elemName, blockName, nameFunc, handler})
 }
 
 func Block(name string, top_childs []Any, childs ...Any) *Block_ {
