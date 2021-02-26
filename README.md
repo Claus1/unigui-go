@@ -2,7 +2,7 @@
 Universal GUI and App Browser for Go
 
 ### Purpose ###
-Provide a programming technology that does not require front-end programming, for a server written in any language, for displaying on any device, in any resolution, without any tuning. 
+Provide a smart programming technology that does not require front-end programming, for a server written in any language, for displaying on any device, in any resolution, without any tuning. 
 
 ### Import ###
 ```
@@ -165,14 +165,8 @@ screen = Screen(Seq(b1,b2), Seq(b3, Seq(b4, b5)))
 
 ### Basic gui elements ###
 
-#### If the element name starts from _ , Unigui will hide its name. ####
+#### If the element name starts with _ , Unigui will hide its name. ####
 if we need to paint an icon in the element, set the element "Icon" to "any MD icon name".
-
-Common form for element constructors:
-```
-gui := Gui(name string, value Any, changed Handler)
-```
-changed Handler is called when the user has changed the element value.
 
 #### Button ####
 Normal button.
@@ -195,7 +189,7 @@ Special button provides to make a photo on the user mobile device.
 ```
 CameraButton("Make a photo", handler_when_shooting_finish)
 ```
-handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is global UploadDir parameter in unigui which can be changed before Start().
+handler_when_loading_finish(button_, name_of_loaded_file) where name_of_loaded_file is the made photo name in the server folder. This folder name is global UploadDir parameter.
 
 #### Edit and Text field. ####
 ```
@@ -260,7 +254,7 @@ func Table(name string, value Any, selected Handler, headers []string, rows [][]
 ```
 If "headers" length is equal "rows" length Unigui counts rows id as an index in rows array.
 If "rows" length is "headers" length + 1, Unigui counts rows id as the last row field.
-So it is possible to use some keys as row ids just by adding it to the row as the last element.
+So it is possible to use some keys as row ids just by adding them to the rows as the last element.
 value == Seq(0) means 0 row is selected in multiselect mode (in array). value = 1 means rows at 1 index is selected in sinlge mode selection.
 
 By default Table has toolbar with search field and icon action buttons. It is possible to hide it if set "Tools" table variable to false.
@@ -279,7 +273,7 @@ TableCell struct {
 	}
 ```
 "Update" is called when the user presses the Enter, "Modify" when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by setting the table variable Modify to nil or Edit to false.
-They can return Error(..) or Warning(..) if the value is not accepted, othewise false for accepting the value (false means continue the standart process).
+They can return Error(..) or Warning(..) if the value is not accepted, othewise return false for accepting the value (false means continue the standart process).
 ```
 table.Update = func(tvalue TableCell) Any{
     AcceptRowValue(table, &tvalue)
@@ -303,7 +297,7 @@ Unigui supports a dedicated signal event handling mechanism. They are useful in 
 ```
 func Dialog(name string, text string, callback Handler, buttons ...string) *Dialog_
 ```
-where buttons is a list of the dialog buttons like ["Yes","No", "Cancel"].
+where buttons is a list of the dialog buttons like "Yes","No", "Cancel".
 Dialog callback has the signature as other with value == pushed button name
 ```
 func dialogCallback(pressedButton Any) Any{
@@ -343,6 +337,8 @@ For constructing custom User use UserConstuctor variable which return new User f
 ```
 UserConstuctor = func() *User{
     user := User
+	//standart conctructor
+	user.Init()
     //assign custom function
     ..
     return &user
