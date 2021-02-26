@@ -343,6 +343,7 @@ UserConstuctor = func() *User{
     ..
     return &user
 }
+```
 
 By default Unigui UserConstuctor creates a user with empty behavior functions and Extension fields. 
 
