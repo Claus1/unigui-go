@@ -278,6 +278,7 @@ func Table(name string, value Any, selected Handler, headers []string, rows [][]
 type (
 	Block_ struct {
 		Name, Icon         string
+		Logo               *Image_
 		Top_childs, Childs []Any
 		Scrool             bool
 		Width, Height      int
