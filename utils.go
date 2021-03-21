@@ -62,6 +62,13 @@ func SeqSeq(arr ...[]Any) [][]Any {
 	return arr
 }
 
+func ToString(v Any) string{
+	if v == nil{
+		return ""
+	}
+	return F("%v", v)
+}
+
 func UpdateError(elem2update Any, str string) *Popwindow {
 	return &Popwindow{Error: str, Data: elem2update}
 }

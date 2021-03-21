@@ -118,33 +118,33 @@ Examples of such block examples/shared_block.go:
 
 func sharedAudios(user* User) Any{
 	table := Table("Audios",0, nil, []string{"Audio", "Duration,sec", "Stars"}, genRows())
-    tableBlock := Block("Table chart, Button("Press me", nil), table)
+	tableBlock := Block("Table chart, Button("Press me", nil), table)
 	tableBlock.Icon = "insights"
-    return tableBlock
+	return tableBlock
 }
 func main(){		
 	//register shared blocks
 	ShareBlock(sharedAudios, "Audios")
-    ...
+	...
 	//register screens
 	...
 }
 ```
-Block making function returns Any becuase it is possible to return a block combination, which has []Any type.
+Block making function returns Any because it is possible to return a block combination, which has []Any type.
 See example such combination in examples/Test blocks/shared_block.go
 
 If child elements are enumerated inside an array, the block will display them on a line, otherwise everyone will be displayed on a new own line(s).
  
 Using a shared block in some screen:
 ```
-scr :=  Screen(Seq(block, bottomBlock), user.SharedBlock("Audios"))	//user is always accesible in screen making function
+scr :=  Screen(Seq(block, bottomBlock), user.SharedBlock("Audios"))	//user is always accessible in a screen making function
 
 ```
 
 #### Events interception of shared blocks ####
 Interception handlers have the same in/out format as usual handlers.
 #### They overrides inner element handler call. If such method returns false the  inner element handler will be calld. 
-For example above interception of select_mode changed event will be:
+For example above the interception of select_mode changed event will be:
 ```
 screen.Handle(elemName string, blockName string, handlerName string, func(v Any) Any{
     if v == "Based"{
@@ -268,9 +268,9 @@ Complete, Modify and Update are CellHandlers where CellHandler = func(cellValue 
 cellValue is consisted from the cell value and its position in the table.
 ```
 TableCell struct {
-		Value Any
-		Where [2]int
-	}
+	Value Any
+	Where [2]int
+}
 ```
 "Update" is called when the user presses the Enter, "Modify" when the cell value is changed by the user. By default it has standart modify method which updates rows data, it can be locked by setting the table variable Modify to nil or Edit to false.
 They can return Error(..) or Warning(..) if the value is not accepted, othewise return false for accepting the value (false means continue the standart process).
@@ -301,7 +301,7 @@ where buttons is a list of the dialog buttons like "Yes","No", "Cancel".
 Dialog callback has the signature as other with value == pushed button name
 ```
 func dialogCallback(pressedButton Any) Any{
-	return Warning(F("The user pressed the button %v", pressedButton))
+  return Warning(F("The user pressed the button %v", pressedButton))
 }
 ```
 Content dialog field can be filled by any Block for additional dialog functionality.
