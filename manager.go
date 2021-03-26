@@ -168,6 +168,9 @@ func (u *User) processMessage(arr []Any) Any {
 	elem := u.findElement(arr)
 	//recursive for Signals
 	for {
+		if elem == nil{
+			return Error(F("Invalid element name in the client message %v", arr))
+		}
 		res := u.processElement(elem, arr)
 		sig, ok := res.(Signal)
 		if !ok {

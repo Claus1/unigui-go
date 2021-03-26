@@ -292,7 +292,7 @@ type (
 		Callback   Handler
 	}
 	Screen_ struct {
-		Name, Icon, Header string
+		Name, Icon, Header, Type string
 		Blocks             []Any
 		Order              int
 		Prepare, Save      func()
@@ -328,5 +328,5 @@ func Block(name string, top_childs []Any, childs ...Any) *Block_ {
 }
 
 func Screen(blocks ...Any) *Screen_ {
-	return &Screen_{Blocks: blocks}
+	return &Screen_{Blocks: blocks, Type: "Screen"}
 }
