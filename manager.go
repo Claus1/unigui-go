@@ -249,7 +249,9 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 func (u *User) blockElem(elem Any) *Block_ {
 	for _, blAny := range flatten(u.screen.Blocks) {
 		block := blAny.(*Block_)
-
+		if block == elem {
+			return block
+		}
 		for _, c := range append(block.Top_childs, block.Childs...) {
 			sq, ok := c.([]Any)
 			if ok {

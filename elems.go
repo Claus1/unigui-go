@@ -266,6 +266,8 @@ func Table(name string, value Any, selected Handler, headers []string, rows [][]
 			t.Value = value
 			return nil
 		}
+	} else {
+		t.Changed = selected
 	}
 	t.Tools = true
 	t.Modify = func(cellValue TableCell) Any{
