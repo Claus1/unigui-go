@@ -27,7 +27,7 @@ type (
 		sharedBlocks                    map[string]Any
 		Toolbar                         []*Gui
 		Dispatch                        func(*User, Signal) Any
-		Save, Back, Forward, Undo, Redo func(User) Any
+		Save, Back, Forward, Undo, Redo func(*User) Any
 		Extension                       map[string]Any
 	}
 	menuItem = [3]Any
@@ -63,7 +63,7 @@ func ShareBlock(bg blockGen, name string) {
 	}
 	genBlocks[name] = bg
 }
-func call(u User, f func(User) Any) Handler {
+func call(u *User, f func(*User) Any) Handler {
 	return func(value Any) Any {
 		if f == nil {
 			return nil
@@ -73,10 +73,10 @@ func call(u User, f func(User) Any) Handler {
 }
 func (user *User) Init() {
 	user.Toolbar = []*Gui{
-		Button("_Back", call(*user, user.Back), "arrow_back"),
-		Button("_Forward", call(*user, user.Forward), "arrow_forward"),
-		Button("_Undo", call(*user, user.Undo), "undo"),
-		Button("_Redo", call(*user, user.Redo), "redo")}
+		Button("_Back", call(user, user.Back), "arrow_back"),
+		Button("_Forward", call(user, user.Forward), "arrow_forward"),
+		Button("_Undo", call(user, user.Undo), "undo"),
+		Button("_Redo", call(user, user.Redo), "redo")}
 
 	user.sharedBlocks = map[string]Any{}
 
