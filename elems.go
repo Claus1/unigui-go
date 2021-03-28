@@ -37,6 +37,7 @@ type (
 	Image_ struct {
 		Gui
 		Image   string
+		Scroll bool
 		Width   int
 		Height  int
 	}
@@ -145,14 +146,15 @@ func List(name string, value Any, changed Handler, options []string) *Select_ {
 
 func Image(name string, image string, click Handler, wh ...int) *Image_ {
 	var w, h int
-	if len(wh) == 0 {
-		w, h = 500, 350
-	} else if len(wh) == 1 {
-		w, h = wh[0], 350
-	} else if len(wh) == 2 {
-		w, h = wh[0], wh[1]
+	switch len(wh) {
+	case 0 :
+		w, h = 500, 350	
+	case 1 :
+		w, h = wh[0], 350	
+	default: 
+		w, h = wh[0], wh[1]		
 	}
-	g := &Image_{Gui{Name: name}, image, w, h}
+	g := &Image_{Gui{Name: name}, image, false, w, h}
 	if click == nil {
 		g.Changed = func(value Any) Any {
 			g.Value = value
@@ -281,7 +283,7 @@ type (
 		Name, Icon         string
 		Logo               *Image_
 		Top_childs, Childs []Any
-		Scrool             bool
+		Scroll             bool
 		Width, Height      int
 		Dispatch           Handler
 	}
