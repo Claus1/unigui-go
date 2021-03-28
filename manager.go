@@ -47,7 +47,7 @@ var (
 func Register(sgen screenGen, scrName string, order int, icon string) {
 	_, found := screens[scrName]
 	if found {
-		panic(F("Dublicated screen name found: %s", scrName))
+		panic(F("Dublicated screen name is found: %s", scrName))
 	}
 	screens[scrName] = scrInfo{scrName, order, icon, sgen}
 
@@ -175,13 +175,12 @@ func (u *User) processMessage(arr []Any) Any {
 		if !ok {
 			return res
 		}
-		elem = sig.Maker
-		name, _ := getFieldValue(elem, "Name")
-		arr = Seq("", name, "@", sig.Value)
+		elem = sig.Maker		
+		arr = Seq("", elem.name(), "@", sig.Value)
 	}
 }
 
-func (u *User) processElement(elem Any, msg []Any) Any {
+func (u *User) processElement(elem IGui, msg []Any) Any {
 	id := 0
 	if len(msg) == 5 {
 		id = ToInt(msg[4])
@@ -207,30 +206,35 @@ func (u *User) processElement(elem Any, msg []Any) Any {
 				}
 			}
 		}
-		hi, ok := getFieldValue(elem, funcName)
-		if !ok {
-			panic(F("%s doesn't contain field %s!", name, funcName))
-		}
-		if h, ok := hi.(Handler); ok {
-			//it's allowed
-			if h == nil && funcName == "Editing" {
-				return nil
-			}
-			res = h(val)
-
-		} else if ch, isCH := hi.(CellHandler); isCH {
-
-			tCell := any2cellVal(val)
-			res = ch(*tCell)
-			if res == false {
-				AcceptRowValue(elem.(*Table_), tCell)
-				return nil
-			}
+		
+		if funcName == "Changed"{
+			res = elem.changed()(val)
 		} else {
-			panic(F("%s.%s has unknown type!", name, funcName))
-		}
-		if id != 0 {
-			res = Answer{res, nil, id}
+			hi, ok := getFieldValue(elem, funcName)
+			if !ok {
+				panic(F("%s doesn't contain field %s!", name, funcName))
+			}
+			if h, ok := hi.(Handler); ok {
+				//it's allowed
+				if h == nil && funcName == "Editing" {
+					return nil
+				}
+				res = h(val)
+
+			} else if ch, isCH := hi.(CellHandler); isCH {
+
+				tCell := any2cellVal(val)
+				res = ch(*tCell)
+				if res == false {
+					AcceptRowValue(elem.(*Table_), tCell)
+					return nil
+				}
+			} else {
+				panic(F("%s.%s has unknown type!", name, funcName))
+			}
+			if id != 0 {
+				res = Answer{res, nil, id}
+			}
 		}
 	} else if sign == "@" {
 		block := u.blockElem(elem)
@@ -271,8 +275,15 @@ func (u *User) blockElem(elem Any) *Block_ {
 
 func (u *User) findPath(elem Any) []string {
 	block := u.blockElem(elem)
-	n, _ := getFieldValue(elem, "Name")
-	return []string{block.Name, n.(string)}
+	name := ""
+	g, ok := elem.(IGui)	
+	if ok{
+		name = g.name()
+	} else {
+		n, _ := getFieldValue(elem, "Name")
+		name = n.(string)
+	}
+	return []string{block.Name, name}
 }
 
 func (u *User) prepareResult(val Any) Any {
@@ -305,7 +316,7 @@ func (u *User) prepareResult(val Any) Any {
 	return val
 }
 
-func (u *User) findElement(arr []Any) Any {
+func (u *User) findElement(arr []Any) IGui {
 	if arr[0] == "toolbar" {
 		for _, b := range u.Toolbar {
 			if b.Name == arr[1] {
@@ -320,13 +331,15 @@ func (u *User) findElement(arr []Any) Any {
 				sq, ok := c.([]Any)
 				if ok {
 					for _, e := range sq {
-						if v, ok := getFieldValue(e, "Name"); ok && v == arr[1] {
-							return e
+						g := e.(IGui)
+						if g.name() == arr[1] {
+							return g
 						}
 					}
 				} else {
-					if v, ok := getFieldValue(c, "Name"); ok && v == arr[1] {
-						return c
+					g := c.(IGui)
+					if g.name() == arr[1] {
+						return g
 					}
 				}
 			}

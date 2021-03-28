@@ -23,6 +23,11 @@ type (
 		Type, Icon string
 	}
 
+	IGui interface{
+		name() string
+		changed() Handler
+	}
+
 	Edit_ struct {
 		Gui
 		Complete, Update Handler
@@ -55,7 +60,7 @@ type (
 	}
 
 	Signal struct {
-		Maker Any
+		Maker IGui
 		Value string
 	}
 
@@ -64,6 +69,14 @@ type (
 		Data, Update         Any
 	}
 )
+
+func (gui *Gui) name() string{
+	return gui.Name
+}
+
+func (gui *Gui) changed() Handler{
+	return gui.Changed
+}
 
 func Button(name string, clicked Handler, icon string) *Gui {
 	b := &Gui{name, nil, clicked, "", icon}
