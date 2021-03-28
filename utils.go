@@ -153,7 +153,6 @@ func (s Popwindow) MarshalJSON() ([]byte, error) {
 }
 
 func getFieldValue(s Any, fname string) (Any, bool) {
-
 	pe := reflect.ValueOf(s).Elem()
 	e := reflect.Indirect(pe)
 	for i := 0; i < e.NumField(); i++ {
@@ -176,24 +175,31 @@ func any2cellVal(v Any) *TableCell {
 }
 
 func serialize(s Any, filter func(string, Any) bool) ([]byte, error) {
-	e := reflect.ValueOf(s).Elem()
+	
 	mp := map[string]Any{}
 
-	for i := 0; i < e.NumField(); i++ {
-		rawname := e.Type().Field(i).Name
-		if rawname[0] <= 'Z' {
-			name := strings.ToLower(rawname)
-			value := e.Field(i).Interface()
-			//only for public fields
-			if !(value == "" && (name == "type" || name == "icon")) && filter(name, value) {
-				vr := reflect.ValueOf(value).Kind()
-				if vr != reflect.Func {
-					mp[name] = value
-				} else if !reflect.ValueOf(value).IsNil() {
-					mp[name] = nil
+	var makeMap func(obj Any) 
+	makeMap = func(obj Any) {
+		e := reflect.ValueOf(obj).Elem()
+		for i := 0; i < e.NumField(); i++ {
+			rawname := e.Type().Field(i).Name
+			if rawname[0] <= 'Z' {
+				name := strings.ToLower(rawname)
+				value := e.Field(i).Interface()
+				if name == "gui"{
+					gui := value.(Gui)
+					makeMap(&gui)  //only for public fields
+				} else if !(value == "" && (name == "type" || name == "icon")) && filter(name, value) {					
+					vr := reflect.ValueOf(value).Kind()
+					if vr != reflect.Func {
+						mp[name] = value
+					} else if !reflect.ValueOf(value).IsNil() {
+						mp[name] = nil
+					}
 				}
 			}
 		}
 	}
+	makeMap(s)
 	return json.Marshal(mp)
 }

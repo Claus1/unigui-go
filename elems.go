@@ -24,29 +24,20 @@ type (
 	}
 
 	Edit_ struct {
-		Name             string
-		Value            Any
-		Changed          Handler
-		Type, Icon       string
+		Gui
 		Complete, Update Handler
 		Edit             bool
 	}
 
 	Image_ struct {
-		Name    string
-		Value   Any
-		Changed Handler
-		Type    string
+		Gui
 		Image   string
 		Width   int
 		Height  int
 	}
 
 	Select_ struct {
-		Name       string
-		Value      Any
-		Changed    Handler
-		Type, Icon string
+		Gui
 		Options    []string
 	}
 
@@ -58,10 +49,7 @@ type (
 	}
 
 	Tree_ struct {
-		Name       string
-		Value      Any
-		Changed    Handler
-		Type, Icon string
+		Gui
 		Options    [][2]string
 		elems      arr3str
 	}
@@ -111,11 +99,11 @@ func Switch(name string, value bool, changed Handler) *Gui {
 }
 
 func Text(str string) *Edit_ {
-	return &Edit_{Name: str, Value: "", Edit: false}
+	return &Edit_{Gui{Name: str, Value: ""}, nil, nil, false}
 }
 
 func Edit(name string, value Any, changed Handler) *Edit_ {
-	g := &Edit_{Name: name, Value: value, Changed: changed, Edit: true}
+	g := &Edit_{Gui{Name: name, Value: value, Changed: changed},nil, nil, true}
 	if changed == nil {
 		g.Changed = func(value Any) Any {
 			g.Value = value
@@ -126,7 +114,7 @@ func Edit(name string, value Any, changed Handler) *Edit_ {
 }
 
 func Select(name string, value Any, changed Handler, options []string) *Select_ {
-	g := &Select_{Name: name, Value: value, Changed: changed, Options: options}
+	g := &Select_{Gui{Name: name, Value: value, Changed: changed}, options}
 	if changed == nil {
 		g.Changed = func(value Any) Any {
 			g.Value = value
@@ -151,7 +139,7 @@ func Image(name string, image string, click Handler, wh ...int) *Image_ {
 	} else if len(wh) == 2 {
 		w, h = wh[0], wh[1]
 	}
-	g := &Image_{Name: name, Image: image, Width: w, Height: h}
+	g := &Image_{Gui{Name: name}, image, w, h}
 	if click == nil {
 		g.Changed = func(value Any) Any {
 			g.Value = value
@@ -162,7 +150,7 @@ func Image(name string, image string, click Handler, wh ...int) *Image_ {
 }
 
 func Tree(name string, value string, selected Handler, fields *map[string]string) *Tree_ {
-	t := &Tree_{Name: name, Value: value, Changed: selected}
+	t := &Tree_{Gui{Name: name, Value: value, Changed: selected}, nil, nil}
 	if selected == nil {
 		t.Changed = func(value Any) Any {
 			t.Value = value
@@ -234,10 +222,8 @@ type (
 	}
 
 	Table_ struct {
-		Name             string
-		Value            Any
-		Changed          Handler
-		Type, Icon, View string
+		Gui
+		View string
 		Headers          []string
 		Rows             [][]Any
 
@@ -260,7 +246,7 @@ func AcceptRowValue(t *Table_, tc *TableCell) {
 }
 
 func Table(name string, value Any, selected Handler, headers []string, rows [][]Any) *Table_ {
-	t := &Table_{Name: name, Value: value, Headers: headers, Rows: rows}
+	t := &Table_{Gui :Gui{Name: name, Value: value}, Headers: headers, Rows: rows}
 	if selected == nil {
 		t.Changed = func(value Any) Any {
 			t.Value = value

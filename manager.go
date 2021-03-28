@@ -118,9 +118,8 @@ func (user *User) SetScreen(name string) bool {
 	return true
 }
 
-func (user *User) SharedBlock(name string) Any {
-	val, ok := user.sharedBlocks[name]
-	if ok {
+func (user *User) SharedBlock(name string) Any {	
+	if val, ok := user.sharedBlocks[name]; ok {
 		return val
 	}
 	bl := genBlocks[name](user)
