@@ -46,6 +46,10 @@ func ToJson(o Any) []byte {
 	return b
 }
 
+func UploadFname(shortName Any) string{
+	return F("web/%s/%v", UploadDir, shortName)
+}
+
 func Fname2url(fn string) string {
 	return F("%s/%s", ResourcePort, strings.ReplaceAll(fn, " ", "%20"))
 }
