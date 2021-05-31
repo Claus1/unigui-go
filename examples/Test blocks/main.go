@@ -53,8 +53,7 @@ func screenTest(user* User)* Screen_{
 	return scr
 }
 
-func main(){		
-	SocketIp = "3.94.99.28"
+func main(){			
 	//register shared blocks
 	ShareBlock(sharedAudios, "Audios")
 	//register screens

@@ -109,7 +109,7 @@ func filterTable(name string, value Any) bool {
 }
 
 func filterPopwindow(name string, value Any) bool {
-	return value != nil && value != ""
+	return (value != nil && value != "")  || name == "progress"
 }
 
 func filterUpdater(name string, value Any) bool {

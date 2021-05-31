@@ -3,6 +3,7 @@ package main
 import (
 	. "github.com/Claus1/unigui-go"	
 	"math/rand"
+	"time"
 	. "math"	
 )
 
@@ -24,13 +25,6 @@ func complete(value Any) Any{
 	return &[]string{"aaa1", "bbbb2", "cccccc3"}
 }
 
-func callDialog(value Any) Any{
-	return Dialog("Dialog", "Answer pls..", dialogCallback, "Yes", "No")
-}
-
-func dialogCallback(pressedButton Any) Any{
-	return Warning(F("The user pressed the button %v", pressedButton)) 
-}
 
 func deleteRow(t* Table_, value Any) Any{	
 	index := t.Value.(int)
@@ -94,6 +88,23 @@ func sharedAudios(user* User) Any{
 	}
 	completeEdit.Complete = complete
 
+	dialogCallback := func(pressedButton Any) Any{
+		f := func(per int) string { return F("Process executing %v", per)}
+		if pressedButton == "Yes"{
+			user.Progress(f(0))
+			for i := 1; i < 100; i++ {
+				user.Progress(f(i))
+				time.Sleep(10 * time.Millisecond)
+			}
+			user.Progress("")
+		}
+		return true
+	}
+
+	callDialog := func(value Any) Any{
+		return Dialog("Dialog", "Answer pls..", dialogCallback, "Yes", "No")
+	}
+	
 	eblock := Block("New block", Seq(Button("Dialog", callDialog, ""), 
 		Edit("Simple Enter update", "cherokkee", updated)), 
 		Text("Text about cats"), readOnly, completeEdit)

@@ -66,7 +66,7 @@ type (
 	}
 
 	Popwindow struct {
-		Error, Warning, Info string
+		Error, Warning, Info, Progress string
 		Data, Update         Any
 	}
 )

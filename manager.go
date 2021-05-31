@@ -29,6 +29,7 @@ type (
 		Dispatch                        func(*User, Signal) Any
 		Save, Back, Forward, Undo, Redo func(*User) Any
 		Extension                       map[string]Any
+		client                          *Client  
 	}
 	menuItem = [3]Any
 )
@@ -71,7 +72,7 @@ func call(u *User, f func(*User) Any) Handler {
 		return f(u)
 	}
 }
-func (user *User) Init() {
+func (user *User) Init(cl * Client) {
 	user.Toolbar = []*Gui{
 		Button("_Back", call(user, user.Back), "arrow_back"),
 		Button("_Forward", call(user, user.Forward), "arrow_forward"),
@@ -83,11 +84,13 @@ func (user *User) Init() {
 	user.screens = map[string]*Screen_{}
 
 	user.SetScreen("") //0 order
+
+	user.client = cl
 }
 
-var UserConstructor = func() *User {
+var UserConstructor = func(cl* Client) *User {
 	user := User{}
-	user.Init()
+	user.Init(cl)
 	return &user
 }
 
@@ -156,6 +159,11 @@ func (u *User) handleMessage(msg []Any) Any {
 		result = u.prepareResult(result)
 	}
 	return result
+}
+
+func (u *User) Progress(str string) {
+	v := &Popwindow{Progress : str}
+	u.client.send <- ToJson(v)
 }
 
 func (u *User) processMessage(arr []Any) Any {

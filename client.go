@@ -77,7 +77,7 @@ func (c *Client) readPump() {
 		fmt.Println(F("Got %v from %v", parsedMsg, c.conn.RemoteAddr()))
 		result := c.user.handleMessage(parsedMsg)
 		if result != nil {
-			c.send <- ToJson(result)
+			c.send <- ToJson(result)						
 		}
 	}
 }
@@ -108,13 +108,7 @@ func (c *Client) writePump() {
 				return
 			}
 			w.Write(message)
-
-			// Add queued messages to the current websocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.send)
-			}
+			//println(message)
 
 			if err := w.Close(); err != nil {
 				return
@@ -144,6 +138,6 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	go client.writePump()
 	go client.readPump()
 	
-	client.user = UserConstructor()
+	client.user = UserConstructor(client)
 	client.send <- ToJson([]Any{menu, client.user.screen})
 }
