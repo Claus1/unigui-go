@@ -8,6 +8,7 @@ go.sum
 .vscode/
 __debug_bin
 examples/engine/
+examples/Test blocks/web
 
 # Test binary, built with `go test -c`
 *.test

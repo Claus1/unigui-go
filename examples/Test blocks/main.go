@@ -54,6 +54,7 @@ func screenTest(user* User)* Screen_{
 }
 
 func main(){		
+	SocketIp = "3.94.99.28"
 	//register shared blocks
 	ShareBlock(sharedAudios, "Audios")
 	//register screens

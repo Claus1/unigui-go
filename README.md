@@ -49,6 +49,7 @@ Unigui builds the interactive app for the code above.
 Connect a browser to localhast:8080 and will see:
 
 ![alt text](https://github.com/Claus1/unigui/blob/main/tests/screen1.png?raw=true)
+
 Possible to define ports and upload directory before Start call.
 By default they are
 ```
@@ -322,7 +323,7 @@ They are returned by handlers and cause appearing on the top screen colored rect
 3. Possible to mirror a session to other users, works simultaneously in one session for many users. 
 
 
-### Milti-user programming? You don"t need it! ###
+### Milti-user programming? You dont need it! ###
 Unigui automatically creates and serves an environment for every user.
 The management class is User which contains all required methods for processing and handling the user activity. A programmer can assign methods 
 ```
