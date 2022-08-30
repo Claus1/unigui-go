@@ -1,20 +1,19 @@
 package unigui
 
 import (
-	"flag"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
-	h "net/http" 
+	h "net/http"
 	"os"
-	"strings"
+	"strings"	
 	"github.com/hashicorp/go-getter"
-	"bytes"		
 )
 
 var (
 	ResourcePort = ":8000"
-	WsocketPort  = ":1234"
+	WsocketPort  = ":8000"
 	UploadDir    = "upload"
 	SocketIp     = "localhost"
 	mainJs = "/main.dart.js"
@@ -74,8 +73,7 @@ func serveMain(w h.ResponseWriter, r *h.Request, fpath string) {
 	funcServeMain(w, r)	
 }
 
-func serveHttp(w h.ResponseWriter, r *h.Request) {
-
+func serveHttp(w h.ResponseWriter, r *h.Request) {	
 	path := r.URL.Path
 	i := strings.Index(path, "?")
 
@@ -121,20 +119,21 @@ func serveHttp(w h.ResponseWriter, r *h.Request) {
 
 func Start() {
 
-	flag.Parse()
+	//flag.Parse()
 	hub := newHub()
 	go hub.run()
 
-	mxHTTP := h.NewServeMux()
-	mxHTTP.HandleFunc("/", serveHttp)	
-	go func() {
+	//mxHTTP := h.NewServeMux()
+	h.HandleFunc("/", serveHttp)	
+	/*go func() {
 		h.ListenAndServe(ResourcePort, mxHTTP)
-	}()
+	}()*/
 
-	h.HandleFunc("/", func(w h.ResponseWriter, r *h.Request) {
+	h.HandleFunc("/ws", func(w h.ResponseWriter, r *h.Request) {
 		serveWs(hub, w, r)
-	})
-	err := h.ListenAndServe(WsocketPort, nil)
+	})	
+
+	err := h.ListenAndServe(ResourcePort, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
