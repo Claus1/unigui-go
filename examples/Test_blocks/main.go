@@ -32,13 +32,14 @@ func screenTest(user* User)* Screen_{
 		image.Image = Fname2url(F("%s/%v", UploadDir, val))
 		return image
 	}
-	block := Block("X Block", Seq(cleanButton, selector), Seq(table, listRefs))
-	block.Icon = "api"
 
 	replaceButton := UploadButton("Replace the logo", replaceImage, "")	
 
-	bottomBlock := Block("Bottom block", Seq(replaceButton, Button("Happy signal", 
-		func(v Any)Any{return Signal{replaceButton, "make everyone happy"}}, "")), image)
+	block := Block("X Block", Seq(cleanButton, selector, Button("Happy signal", 
+	func(v Any)Any{return Signal{replaceButton, "make everyone happy"}}, "")), Seq(table, listRefs))
+	block.Icon = "api"
+
+	bottomBlock := Block("Bottom block", Seq(replaceButton))
 
 	bottomBlock.Dispatch = blockDispatch
 
