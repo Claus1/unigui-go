@@ -224,7 +224,7 @@ type (
 	}
 
 	Dialog_ struct {
-		Name, Text string
+		Name, Text, Type string
 		Content    *Block_
 		Buttons    []string
 		Callback   Handler
@@ -248,7 +248,7 @@ type elemHandle struct {
 }
 
 func Dialog(name string, text string, callback Handler, buttons ...string) *Dialog_ {
-	return &Dialog_{name, text, nil, buttons, callback}
+	return &Dialog_{name, text,"dialog", nil, buttons, callback}
 }
 
 func (s *Screen_) Handle(elemName string, blockName string, nameFunc string, handler Handler) {
@@ -266,5 +266,5 @@ func Block(name string, top_childs []Any, childs ...Any) *Block_ {
 }
 
 func Screen(blocks ...Any) *Screen_ {
-	return &Screen_{Blocks: blocks, Type: "Screen", Header: AppName}
+	return &Screen_{Blocks: blocks, Type: "screen", Header: AppName}
 }
