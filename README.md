@@ -50,18 +50,17 @@ Connect a browser to localhast:8080 and will see:
 
 ![alt text](https://github.com/Claus1/unigui/blob/main/tests/screen1.png?raw=true)
 
-Possible to define ports and upload directory before Start call.
+Possible to define ports and upload directory in config file.
 By default they are
 ```
-ResourcePort = ":8000"
-WsocketPort  = ":1234" 
-UploadDir    = "upload"
+port = :8000
+appname = Test app
 ```
 
 ### Handling events ###
 All handlers are functions which have a signature
 ```
-func handlerX( valueX interface{}) interface{}
+func handlerX(valueX any) any
 ```
 where valueX is a value for the event.
 
