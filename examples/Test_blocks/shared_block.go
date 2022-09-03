@@ -77,7 +77,7 @@ func sharedAudios(user* User) Any{
 	treeSelected := func(value Any) Any{
 		return Info(F("%v selected!", value))
 	}
-	tree := Tree("Inheritance","Animals",treeSelected, &treeData)	
+	tree := Tree("Inheritance","Animals",treeSelected, treeData)	
 	readOnly := Edit("Read only", "Try to change me", nil)
 	readOnly.Edit = false
 

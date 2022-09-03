@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
+	"log"	
+	"io/ioutil"
 	h "net/http"
 	"os"
 	"strings"	
@@ -16,9 +17,34 @@ var (
 	WsocketPort  = ":8000"
 	UploadDir    = "upload"
 	SocketIp     = "localhost"
-	mainJs = "/main.dart.js"
-	funcServeMain func(w h.ResponseWriter, r *h.Request)
+	AppName      = "Unigui" 
+	config    map[string]string
+	funcServeMain func(w h.ResponseWriter, r *h.Request)	
 )
+
+func ReadConfig() {
+	file, err := os.Open("config")
+	if err != nil {
+		Print(err)
+	}
+	defer file.Close()
+	byteValue, _ := ioutil. ReadAll(file)	
+	config = make(map[string]string)
+	for _, str := range strings.Split(string(byteValue), "\n") {
+		str = strings.TrimSpace(str)
+		if str != "" {
+			arr := strings.Split(str, "=")
+			if len(arr) == 2 {
+				config[strings.TrimSpace(arr[0])] = strings.TrimSpace(arr[1])
+			}
+		}
+	}
+}
+
+
+func GetConfig(param string) string {
+	return config[param]
+}
 
 //download web files if do not exist
 func init() {
@@ -80,11 +106,12 @@ func serveHttp(w h.ResponseWriter, r *h.Request) {
 	if i != -1 {
 		path = path[:i]
 	}
-	fpath := F("web%s", strings.ReplaceAll(path, "%20", " "))
+	fpath := F("./web%s", strings.ReplaceAll(path, "%20", " "))
 
 	if r.Method == "GET" {
-		if path == mainJs && SocketIp != "localhost"{
-			serveMain(w, r, fpath)
+		if path == "/" {
+			//serveMain(w, r, fpath)
+			h.ServeFile(w, r, fpath + "index.html")
 		} else{
 			h.ServeFile(w, r, fpath)
 		}
@@ -119,20 +146,20 @@ func serveHttp(w h.ResponseWriter, r *h.Request) {
 
 func Start() {
 
-	//flag.Parse()
+	ReadConfig()
+
+	ResourcePort = GetConfig("port")
+	AppName = GetConfig("appname")
+	
 	hub := newHub()
 	go hub.run()
-
-	//mxHTTP := h.NewServeMux()
-	h.HandleFunc("/", serveHttp)	
-	/*go func() {
-		h.ListenAndServe(ResourcePort, mxHTTP)
-	}()*/
 
 	h.HandleFunc("/ws", func(w h.ResponseWriter, r *h.Request) {
 		serveWs(hub, w, r)
 	})	
-
+	
+	h.HandleFunc("/", serveHttp)	
+		
 	err := h.ListenAndServe(ResourcePort, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

@@ -1,10 +1,5 @@
 package unigui
 
-import (
-	"sort"
-	"strings"
-)
-
 const (
 	toggles  = "toggles"
 	list     = "list"
@@ -20,7 +15,8 @@ type (
 		Name       string
 		Value      Any
 		Changed    Handler
-		Type, Icon string
+		Type string 
+		Icon string 
 	}
 
 	IGui interface{
@@ -46,18 +42,10 @@ type (
 		Gui
 		Options    []string
 	}
-
-	arr3str = [][3]string
-
-	optLevel struct {
-		s3    [3]string
-		level int
-	}
-
+	
 	Tree_ struct {
-		Gui
-		Options    [][2]string
-		elems      arr3str
+		Gui		
+		Options  map[string]string 
 	}
 
 	Signal struct {
@@ -164,68 +152,15 @@ func Image(name string, image string, click Handler, wh ...int) *Image_ {
 	return g
 }
 
-func Tree(name string, value string, selected Handler, fields *map[string]string) *Tree_ {
-	t := &Tree_{Gui{Name: name, Value: value, Changed: selected}, nil, nil}
+func Tree(name string, value string, selected Handler, fields map[string]string) *Tree_ {
+	t := &Tree_{Gui{Name: name, Value: value, Changed: selected, Type: "tree"}, fields}
 	if selected == nil {
 		t.Changed = func(value Any) Any {
 			t.Value = value
 			return nil
 		}
-	}
-	t.SetMapFields(fields)
+	}	
 	return t
-}
-
-func (s *Tree_) SetFields(elems arr3str) {
-	s.elems = elems
-	s.Type = list
-	filterSoft := func(par2equal string) arr3str {
-		var arr arr3str
-		for _, e := range elems {
-			if e[2] == par2equal {
-				arr = append(arr, e)
-			}
-		}
-		sort.SliceStable(arr, func(i, j int) bool {
-			return arr[i][0] < arr[j][0]
-		})
-		return arr
-	}
-	var options []optLevel
-	//declare recursive
-	var make4root func(optLevel)
-	make4root = func(ol optLevel) {
-		options = append(options, ol)
-		childs := filterSoft(ol.s3[1])
-		for _, e := range childs {
-			make4root(optLevel{e, ol.level + 1})
-		}
-	}
-	roots := filterSoft("")
-	for _, e := range roots {
-		make4root(optLevel{e, 0})
-	}
-	s.Options = nil
-	for _, e := range options {
-		vlines := e.level - 1
-		str := ""
-		if vlines >= 0 {
-			str = strings.Repeat("|", vlines)
-			str += "\\"
-		}
-		str += e.s3[0]
-		s.Options = append(s.Options, [2]string{str, e.s3[1]})
-	}
-}
-
-func (s *Tree_) SetMapFields(fields *map[string]string) {
-	elems := make(arr3str, len(*fields))
-	i := 0
-	for k, v := range *fields {
-		elems[i] = [3]string{k, k, v}
-		i++
-	}
-	s.SetFields(elems)
 }
 
 type (
@@ -331,5 +266,5 @@ func Block(name string, top_childs []Any, childs ...Any) *Block_ {
 }
 
 func Screen(blocks ...Any) *Screen_ {
-	return &Screen_{Blocks: blocks, Type: "Screen"}
+	return &Screen_{Blocks: blocks, Type: "Screen", Header: AppName}
 }

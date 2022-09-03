@@ -296,10 +296,7 @@ func (u *User) findPath(elem Any) []string {
 
 func (u *User) prepareResult(val Any) Any {
 	if val == true {
-		val = u.screen
-		if u.screen.Prepare != nil {
-			u.screen.Prepare()
-		}
+		val = u.screen		
 	} else {
 		switch val.(type) {
 		case Answer, *Dialog_:

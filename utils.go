@@ -9,6 +9,7 @@ import (
 
 var (
 	F       = fmt.Sprintf
+	Print     = fmt.Println
 	flatten func(v []Any) []Any
 )
 
