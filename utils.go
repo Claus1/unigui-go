@@ -51,10 +51,8 @@ func UploadFname(shortName Any) string{
 	return F("web/%s/%v", UploadDir, shortName)
 }
 
-func Fname2url(fn string) string {
-	if strings.HasPrefix(fn, "web/"){
-		fn = fn[4:]
-	}
+func Fname2url(fn string) string {	
+	fn = strings.TrimPrefix(fn, "web/")
 	return F("%s/%s", ResourcePort, strings.ReplaceAll(fn, " ", "%20"))	
 }
 

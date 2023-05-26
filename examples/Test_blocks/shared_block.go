@@ -88,6 +88,9 @@ func sharedAudios(user* User) Any{
 	}
 	completeEdit.Complete = complete
 
+	treeBlock := Block("Tree block", Seq(), tree)
+	treeBlock.Icon = "account_tree"
+
 	dialogCallback := func(pressedButton Any) Any{
 		f := func(per int) string { return F("Process executing %v", per)}
 		if pressedButton == "Yes"{
@@ -98,7 +101,7 @@ func sharedAudios(user* User) Any{
 			}
 			user.Progress("")
 		}
-		return true
+		return treeBlock
 	}
 
 	callDialog := func(value Any) Any{
@@ -108,9 +111,6 @@ func sharedAudios(user* User) Any{
 	eblock := Block("New block", Seq(Button("Dialog", callDialog, ""), 
 		Edit("Simple Enter update", "cherokkee", updated)), 
 		Text("Text about cats"), readOnly, completeEdit)
-
-	treeBlock := Block("Tree block", Seq(), tree)
-	treeBlock.Icon = "account_tree"
 	
 	tableBlock := Block("Table chart - push the chart button on the table", Seq(), table)
 	tableBlock.Icon = "insights"
