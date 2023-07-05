@@ -17,7 +17,9 @@ func screenTest(user *User) *Screen_ {
 
 	selector := Select("Select", "All", nil, []string{"All", "Based", "Group"})
 
-	listRefs := List("Detail ref list signals", "", nil, []string{"Select reference"})
+	tableA := Table("Audios",0, nil, []string{"Audio", "Duration,sec", "Stars"}, genRows())	
+	tableA.View = "i-1,2"
+	tableA.Type = "linechart"
 
 	image := Image("logo", Fname2url("images/unigui.png"), func(v Any) Any { return Info(F("%v logo selected!")) })
 
@@ -28,8 +30,7 @@ func screenTest(user *User) *Screen_ {
 
 	replaceButton := UploadButton("Replace the logo", replaceImage, "")
 
-	block := Block("X Block", Seq(cleanButton, selector, Button("Happy signal",
-		func(v Any) Any { return Signal{replaceButton, "make everyone happy"} }, "")), Seq(table, listRefs))
+	block := Block("X Block", Seq(cleanButton, selector), Seq(table, tableA))
 	block.Icon = "api"
 
 	bottomBlock := Block("Bottom block", Seq(replaceButton))	

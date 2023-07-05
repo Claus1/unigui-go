@@ -48,13 +48,13 @@ func main(){
 Unigui builds the interactive app for the code above.
 Connect a browser to localhast:8080 and will see:
 
-![alt text](https://github.com/Claus1/unigui/blob/main/tests/screen1.png?raw=true)
+![image](https://github.com/Claus1/unigui/assets/1247062/62caca12-86fc-4dcd-99b4-26845963b5cf)
 
 Possible to define ports and upload directory in config file.
 By default they are
 ```
 port = :8000
-appname = Test app
+appname = "Test app"
 ```
 
 ### Handling events ###
@@ -65,7 +65,7 @@ func handlerX(valueX any) any
 where valueX is a value for the event.
 
 All Gui objects have a field ‘Value’. 
-For an edit field the value is a string or number, for a switch or check button the value is boolean, for table is row id or int index, e.t.c.
+For an edit field the value is a string or number, for a switch or check button the value is boolean, for table is row id, e.t.c.
 When a user changes the value of the Gui object or presses Button, the server calls the ‘Changed’ function handler.
 
 ```
@@ -161,7 +161,7 @@ If the blocks are simply listed Unigui draws them from left to right or from top
 screen = Screen(Seq(b1,b2), Seq(b3, Seq(b4, b5)))
 #[b1,b2] - the first vertical area, [b3, [b4, b5]] - the second one.
 
-![alt text](https://github.com/Claus1/unigui/blob/main/tests/multiscreen.png?raw=true)
+![image](https://github.com/Claus1/unigui/assets/1247062/75d0f64c-d457-43c6-a909-0c97f4b4ab0f)
 
 ### Basic gui elements ###
 
@@ -244,7 +244,7 @@ func Tree(name string, value string, selected Handler, fields *map[string]string
 ```
 fields for the tree data {item_name:parent_name}.
 
-parent_name is "" for root items. selected is called when the user clicks on a tree item. 
+parent_name is "" for root items. selected is called when the user clicks(selects) on a tree item. 
 
 ### Table. ###
 Tables is common structure for presenting 2D data and charts. Can contain Append, Delete, Update handlers, Multimode parameter is True if allowed single and multi select mode. True by default. All of them are optional. When you assign a handler for such action Unigui will draw the appropriate action icon button in the table header automatically.
@@ -286,7 +286,7 @@ The "Changed" table handler accepts the selected row number or id as a value.
 
 ### Chart ###
 Chart is a table with additional Table parameter "View" which explaines unigui how to draw a chart. The format is "{x index}-{y index1},{y index2}[,..]". "0-1,2,3" means that x axis values will be taken from 0 column, and y values from 1,2,3 columns of row data.
-"i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If the user set View parameter then unigui displays a chart icon at the table header, pushing that switches table mode to the chart mode. If a table constructor set Type to "view" in addition to "View" parameter the table will be displayed as a chart on start. In the chart mode pushing the icon button on the top right switches back to the table row mode.
+"i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If the user set View parameter then unigui displays a chart icon at the table header, pushing that switches table mode to the chart mode. If a table constructor set Type to "linechart" in addition to "View" parameter the table will be displayed as a chart on start. In the chart mode pushing the icon button on the top right switches back to the table row mode.
 Chart example in examples/Test blocks/shared_block.go
 
 
