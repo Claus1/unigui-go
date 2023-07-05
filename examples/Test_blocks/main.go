@@ -19,13 +19,6 @@ func screenTest(user *User) *Screen_ {
 
 	listRefs := List("Detail ref list signals", "", nil, []string{"Select reference"})
 
-	blockDispatch := func(value Any) Any {
-		for i := 0; i < 10; i++ {
-			listRefs.Options = append(listRefs.Options, F("#%d %v", i, value))
-		}
-		return listRefs
-	}
-
 	image := Image("logo", Fname2url("images/unigui.png"), func(v Any) Any { return Info(F("%v logo selected!")) })
 
 	replaceImage := func(val Any) Any {
@@ -39,9 +32,7 @@ func screenTest(user *User) *Screen_ {
 		func(v Any) Any { return Signal{replaceButton, "make everyone happy"} }, "")), Seq(table, listRefs))
 	block.Icon = "api"
 
-	bottomBlock := Block("Bottom block", Seq(replaceButton))
-
-	bottomBlock.Dispatch = blockDispatch
+	bottomBlock := Block("Bottom block", Seq(replaceButton))	
 
 	scr := Screen(Seq(block, bottomBlock), user.SharedBlock("Audios"))
 

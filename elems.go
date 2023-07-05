@@ -219,8 +219,7 @@ type (
 		Logo               *Image_
 		Top_childs, Childs []Any
 		Scroll             bool
-		Width, Height      int
-		Dispatch           Handler
+		Width, Height      int		
 	}
 
 	Dialog_ struct {
@@ -234,8 +233,7 @@ type (
 		Blocks             []Any
 		Order              int
 		Prepare, Save      func()
-		Toolbar            []*Gui
-		Dispatch           Handler
+		Toolbar            []*Gui		
 		handlers           []elemHandle
 	}
 )

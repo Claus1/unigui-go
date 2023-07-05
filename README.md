@@ -289,9 +289,6 @@ Chart is a table with additional Table parameter "View" which explaines unigui h
 "i-3,5" means that x axis values will be equal the row indexes in rows, and y values from 3,5 columns of rows data. If the user set View parameter then unigui displays a chart icon at the table header, pushing that switches table mode to the chart mode. If a table constructor set Type to "view" in addition to "View" parameter the table will be displayed as a chart on start. In the chart mode pushing the icon button on the top right switches back to the table row mode.
 Chart example in examples/Test blocks/shared_block.go
 
-### Signals ###
-Unigui supports a dedicated signal event handling mechanism. They are useful in table fields and shared blocks when the containing blocks and screens must respond to their elements without program linking. If a string in a table field started from @ then it considered as a signal. If the user clicks such field in non-edit mode then Unigui generates a signal event, which pop-up to dispatch functions of its containters. First Unigui look for Dispatch at the element block, if not found than at the screen, if not found User.Dispatch will be called, which can be defined for such cases. Any handler can return Signal(element_that_generated_the_event, "the_event_value") which will be processed.
-
 
 ### Dialog ###
 ```
@@ -312,7 +309,6 @@ They are intended for non-blocking displaying of error messages and informing ab
 Info(info_message)
 Warning(warning_message)
 Error(error_message)
-UpdateError(updated_element, error_nessage)
 ```
 They are returned by handlers and cause appearing on the top screen colored rectangles window for 3 second. UpdateError also says Unigui to update updated_element.
 
@@ -331,7 +327,6 @@ Close window user.progress(nil) or automatically when the handler returns someth
 Unigui automatically creates and serves an environment for every user.
 The management class is User which contains all required methods for processing and handling the user activity. A programmer can assign methods 
 ```
-Dispatch                        func(*User, Signal) Any
 Save, Back, Forward, Undo, Redo func(User) Any
 //also store and use any data in User.Extention which is defined as 
 Extension  map[string]Any
@@ -357,10 +352,3 @@ In screen and shared block functions User is automatically acccesible as the fun
 More info about User class and methods you can find in manager.go in the root dir.
 
 Examples are in examples folder.
-
-Few articles about Unigui and its protocol:
-
-in English https://docs.google.com/document/d/1G_9Ejt9ETDoXpTCD3YkR8CW508Idk9BaMlD72tlx8bc/edit?usp=sharing
-
-in Russian https://docs.google.com/document/d/1EleilkEX-m5XOZK5S9WytIGpImAzOhz7kW3EUaeow7Q/edit?usp=sharing
-

@@ -25,8 +25,7 @@ type (
 		screen                          *Screen_
 		screens                         map[string]*Screen_
 		sharedBlocks                    map[string]Any
-		Toolbar                         []*Gui
-		Dispatch                        func(*User, Signal) Any
+		Toolbar                         []*Gui		
 		Save, Back, Forward, Undo, Redo func(*User) Any
 		Extension                       map[string]Any
 		client                          *Client  
@@ -244,16 +243,7 @@ func (u *User) processElement(elem IGui, msg []Any) Any {
 				res = Answer{res, nil, id}
 			}
 		}
-	} else if sign == "@" {
-		block := u.blockElem(elem)
-		if block.Dispatch != nil {
-			res = block.Dispatch(val)
-		} else if u.screen.Dispatch != nil {
-			res = u.screen.Dispatch(val)
-		} else if u.Dispatch != nil {
-			res = u.Dispatch(u, Signal{elem, val.(string)})
-		}
-	}
+	} 	
 	return res
 }
 
